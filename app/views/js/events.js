@@ -82,7 +82,10 @@ function loadTemperature(canvas) {
     };
 
     var ctx = document.getElementById(canvas).getContext("2d");
-    var hourlyTemps = new Chart(ctx).Line(data);
+    var hourlyTemps = new Chart(ctx).Line(data, {
+      animation: false,
+      pointHitDetectionRadius : 1,
+    });
   };
 
   request.send();
@@ -101,7 +104,7 @@ function loadWind(canvas) {
         datasets: [
             {
                 label: "Speed",
-                fillColor: "rgba(220,220,220,0.2)",
+                fillColor: "rgba(110,220,110,0.2)",
                 strokeColor: "rgba(220,220,220,1)",
                 pointColor: "rgba(220,220,220,1)",
                 pointStrokeColor: "#fff",
@@ -113,7 +116,10 @@ function loadWind(canvas) {
     };
 
     var ctx = document.getElementById(canvas).getContext("2d");
-    var windSpeeds = new Chart(ctx).Line(data);
+    var windSpeeds = new Chart(ctx).Line(data, {
+      animation: false,
+      pointHitDetectionRadius : 1
+    });
   };
 
   request.send();
@@ -131,8 +137,9 @@ function loadPrecipitation(canvas) {
         labels: hours,
         datasets: [
             {
+                animation: true,
                 label: "Inches",
-                fillColor: "rgba(220,220,220,0.2)",
+                fillColor: "rgba(220,110,100,0.2)",
                 strokeColor: "rgba(220,220,220,1)",
                 pointColor: "rgba(220,220,220,1)",
                 pointStrokeColor: "#fff",
@@ -144,7 +151,13 @@ function loadPrecipitation(canvas) {
     };
 
     var ctx = document.getElementById(canvas).getContext("2d");
-    var precip = new Chart(ctx).Bar(data);
+    var precip = new Chart(ctx).Bar(data, {
+      animation: false,
+      scaleOverride: true,
+      scaleSteps: 10,
+      scaleStepWidth: 0.1,
+      scaleStartValue: 0
+    });
   };
 
   request.send();
@@ -163,7 +176,7 @@ function loadCloudCover(canvas) {
         datasets: [
             {
                 label: "Percent Coverage",
-                fillColor: "rgba(220,220,220,0.2)",
+                fillColor: "rgba(220,110,100,0.2)",
                 strokeColor: "rgba(220,220,220,1)",
                 pointColor: "rgba(220,220,220,1)",
                 pointStrokeColor: "#fff",
@@ -175,7 +188,14 @@ function loadCloudCover(canvas) {
     };
 
     var ctx = document.getElementById(canvas).getContext("2d");
-    var cloudCoverage = new Chart(ctx).Line(data);
+    var cloudCoverage = new Chart(ctx).Line(data, {
+      animation: false,
+      pointHitDetectionRadius : 1,
+      scaleOverride: true,
+      scaleSteps: 10,
+      scaleStepWidth: 10,
+      scaleStartValue: 0
+    });
   };
 
   request.send();

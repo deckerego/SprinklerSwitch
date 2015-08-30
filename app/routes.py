@@ -35,7 +35,7 @@ last_area_detected = None
 def send_favicon():
 	return static_file('favicon.ico', root='views/images')
 
-@application.route('/js/installed/<filename:path>')
+@application.route('/installed/<filename:path>')
 def send_bower(filename):
 	return static_file(filename, root='views/bower_components')
 
@@ -93,6 +93,11 @@ def get_cloudcover(forecast):
 	clouds['times'] = starttimes
 	clouds['percentage'] = coverages
 	return json.dumps(clouds)
+
+@application.put('/forecast/update')
+def update_forecast(forecast):
+	forecast.update()
+	return '{ "status": "Update Requested" }'
 
 @application.get('/switch/<button:int>')
 def get_switch_status(button):
