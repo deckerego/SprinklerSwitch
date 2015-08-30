@@ -1,16 +1,12 @@
 import os,sys
 sys.path.insert(1, os.path.join(sys.path[0], '..'))
-from forecast import Forecast
+from noaa import Forecast
 
 forecast = Forecast()
 forecast.update()
 
 print "\n*** Temperature ***"
 for temp in forecast.temperature():
-    print temp
-
-print "\n*** Dew Point ***"
-for temp in forecast.dewpoint():
     print temp
 
 print "\n*** Precipitation ***"

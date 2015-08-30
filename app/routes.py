@@ -16,21 +16,28 @@ import json
 import time
 import datetime
 from HIH6130 import Temperature
+from noaa import Forecast
 from config import configuration
 from bottle import Bottle, HTTPResponse, static_file, get, put, request, response, template
 
 instance_name = configuration.get('instance_name')
 
 temperature = Temperature()
+forecast = Forecast()
 
 application = Bottle()
 application.install(temperature)
+application.install(forecast)
 
 last_area_detected = None
 
 @application.route('/favicon.ico')
 def send_favicon():
 	return static_file('favicon.ico', root='views/images')
+
+@application.route('/js/installed/<filename:path>')
+def send_bower(filename):
+	return static_file(filename, root='views/bower_components')
 
 @application.route('/js/<filename:path>')
 def send_js(filename):
@@ -55,7 +62,37 @@ def get_environment(temperature):
 
 @application.get('/forecast/temperature')
 def get_temperature(forecast):
-	
+	temperatures = {}
+	starttimes, hourlys, dewpoints = zip(*forecast.temperature())
+	temperatures['times'] = starttimes
+	temperatures['hourly'] = hourlys
+	temperatures['dewpoints'] = dewpoints
+	return json.dumps(temperatures)
+
+@application.get('/forecast/precipitation')
+def get_precipitation(forecast):
+	precips = {}
+	starttimes, precipitation = zip(*forecast.precipitation())
+	precips['times'] = starttimes
+	precips['inches'] = precipitation
+	return json.dumps(precips)
+
+@application.get('/forecast/wind')
+def get_wind(forecast):
+	winds = {}
+	starttimes, speeds, directions = zip(*forecast.wind())
+	winds['times'] = starttimes
+	winds['speed'] = speeds
+	winds['direction'] = directions
+	return json.dumps(winds)
+
+@application.get('/forecast/cloudcover')
+def get_cloudcover(forecast):
+	clouds = {}
+	starttimes, coverages = zip(*forecast.cloudcover())
+	clouds['times'] = starttimes
+	clouds['percentage'] = coverages
+	return json.dumps(clouds)
 
 @application.get('/switch/<button:int>')
 def get_switch_status(button):

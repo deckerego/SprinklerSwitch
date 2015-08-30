@@ -60,3 +60,6 @@ config.py
 
 # SQLite Databases
 *.db
+
+# Bower JavaScript
+bower_components/

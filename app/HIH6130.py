@@ -59,9 +59,6 @@ class Temperature(object):
     def close(self):
         logger.info("Closing Temperature Connection")
 
-    def start(self):
-        logger.info("Opening Temperature Connection")
-
     def get_conditions(self):
         if not self.bus:
             return (None, None, None)

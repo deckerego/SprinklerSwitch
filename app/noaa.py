@@ -1,9 +1,9 @@
 import urllib
-import dateutil.parser #dateutil.parser.parse(text)
 from xml.etree import ElementTree
 import sqlite3
 import logging
 import base64
+import inspect
 from config import configuration
 
 logger = logging.getLogger('temperature')
@@ -17,16 +17,11 @@ class Forecast(object):
         lat = configuration.get('latitude')
         lon = configuration.get('longitude')
         self.url = noaa_url % (lat, lon)
-        self.timespans = {}
-        self.temperatures = []
-        self.dewpoints = []
-        self.precipitations = []
-        self.winds = []
-        self.clouds = []
 
     # This is invoked when installed as a Bottle plugin
     def setup(self, app):
         self.routes = app
+        self.update()
 
         for other in app.plugins:
             if not isinstance(other, Forecast):
@@ -50,10 +45,9 @@ class Forecast(object):
     def close(self):
         logger.info("Closing Forecast")
 
-    def start(self):
-        logger.info("Opening Forecast")
-
     def __load_timeseries(self, tree):
+        self.timespans = {}
+
         for layout in tree.getroot().iter(tag="time-layout"):
             key = layout.find("layout-key").text
             start_times = map(lambda time: time.text, layout.iter(tag="start-valid-time"))
@@ -61,6 +55,8 @@ class Forecast(object):
             self.timespans[key] = zip(start_times, end_times) if any(end_times) else start_times
 
     def __load_liquid_precipitation(self, tree):
+        self.precipitations = []
+
         for precipitation in tree.getroot().iter(tag="precipitation"):
             time_layout = precipitation.attrib['time-layout']
             precip_type = precipitation.attrib['type']
@@ -69,9 +65,11 @@ class Forecast(object):
                 times = iter(self.timespans[time_layout])
                 for value in precipitation.iter(tag="value"):
                     starttime, endtime = times.next()
-                    self.precipitations.append((starttime, value.text))
+                    self.precipitations.append((starttime, float(value.text)))
 
     def __load_hourly_temperature(self, tree):
+        self.temperatures = []
+
         for temperature in tree.getroot().iter(tag="temperature"):
             time_layout = temperature.attrib['time-layout']
             temp_type = temperature.attrib['type']
@@ -79,14 +77,18 @@ class Forecast(object):
             if temp_type == "hourly":
                 times = iter(self.timespans[time_layout])
                 for value in temperature.iter(tag="value"):
-                    self.temperatures.append((times.next(), value.text))
+                    self.temperatures.append((times.next(), int(value.text)))
 
             elif temp_type == "dew point":
-                times = iter(self.timespans[time_layout])
+                sequence = -1
                 for value in temperature.iter(tag="value"):
-                    self.dewpoints.append((times.next(), value.text))
+                    sequence += 1
+                    starttime, hourly = self.temperatures[sequence]
+                    self.temperatures[sequence] = (starttime, hourly, int(value.text))
 
     def __load_hourly_wind(self, tree):
+        self.winds = []
+
         for speed in tree.getroot().iter(tag="wind-speed"):
             time_layout = speed.attrib['time-layout']
             wind_type = speed.attrib['type']
@@ -94,7 +96,7 @@ class Forecast(object):
             if wind_type == "sustained":
                 times = iter(self.timespans[time_layout])
                 for value in speed.iter(tag="value"):
-                    self.winds.append((times.next(), value.text))
+                    self.winds.append((times.next(), int(value.text)))
 
         for direction in tree.getroot().iter(tag="direction"):
             table = direction.attrib['time-layout']
@@ -105,9 +107,11 @@ class Forecast(object):
                 for value in direction.iter(tag="value"):
                     sequence += 1
                     starttime, speed = self.winds[sequence]
-                    self.winds[sequence] = (starttime, speed, value.text)
+                    self.winds[sequence] = (starttime, speed, int(value.text))
 
     def __load_hourly_cloudcover(self, tree):
+        self.clouds = []
+
         for cover in tree.getroot().iter(tag="cloud-amount"):
             time_layout = cover.attrib['time-layout']
             cloud_type = cover.attrib['type']
@@ -115,9 +119,10 @@ class Forecast(object):
             if cloud_type == "total":
                 times = iter(self.timespans[time_layout])
                 for value in cover.iter(tag="value"):
-                    self.clouds.append((times.next(), value.text))
+                    self.clouds.append((times.next(), int(value.text) if value.text else None))
 
     def update(self):
+        logger.info("Refreshing data from NOAA")
         resp = urllib.urlopen(self.url)
         tree = ElementTree.parse(resp)
 
@@ -129,9 +134,6 @@ class Forecast(object):
 
     def temperature(self):
         return self.temperatures
-
-    def dewpoint(self):
-        return self.dewpoints
 
     def precipitation(self):
         return self.precipitations
