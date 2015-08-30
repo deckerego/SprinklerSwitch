@@ -26,7 +26,6 @@ class Temperature(object):
             try:
                 self.bus = smbus.SMBus(1)
                 self.address = 0x27
-                self.start()
             except IOError:
                 logger.error("Could not start I2C bus")
 
