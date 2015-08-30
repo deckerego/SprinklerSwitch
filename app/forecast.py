@@ -4,198 +4,145 @@ from xml.etree import ElementTree
 import sqlite3
 import logging
 import base64
+from config import configuration
+
+logger = logging.getLogger('temperature')
+noaa_url = "http://graphical.weather.gov/xml/sample_products/browser_interface/ndfdXMLclient.php?lat=%s&lon=%s&product=time-series&Unit=e"
 
 class Forecast(object):
-    def __init__(self, lat, lon):
-        self.url = "http://graphical.weather.gov/xml/sample_products/browser_interface/ndfdXMLclient.php?lat=%s&lon=%s&product=time-series&Unit=e" % (lat, lon)
-        self.db_destroy = False
-        self.db_name = base64.b64encode("%s,%s" % (lat, lon))
-        self.db_conn = sqlite3.connect("%s.db" % self.db_name)
+    name = 'forecast'
+    keyword = 'forecast'
 
-    def __del__(self):
-        self.db_conn.close()
+    def __init__(self):
+        lat = configuration.get('latitude')
+        lon = configuration.get('longitude')
+        self.url = noaa_url % (lat, lon)
+        self.timespans = {}
+        self.temperatures = []
+        self.dewpoints = []
+        self.precipitations = []
+        self.winds = []
+        self.clouds = []
 
-    def __load_timetables(self, tree):
-        cursor = self.db_conn.cursor()
+    # This is invoked when installed as a Bottle plugin
+    def setup(self, app):
+        self.routes = app
 
-        for time in tree.getroot().iter(tag="time-layout"):
-            table = None
-            sequence = -1
+        for other in app.plugins:
+            if not isinstance(other, Forecast):
+                continue
+            if other.keyword == self.keyword:
+                raise PluginError("Found another instance of Forecast running!")
 
-            for child in time.getchildren():
-                if child.tag == "layout-key":
-                    table = child.text
+    # This is invoked within Bottle as part of each route when installed
+    def apply(self, callback, route):
+        args = inspect.getargspec(callback)[0]
+        if self.keyword not in args:
+            return callback
 
-                    logging.info("Re-creating table %s" % table)
-                    cursor.execute("DROP TABLE IF EXISTS [%s]" % table)
-                    cursor.execute("CREATE TABLE [%s] (sequence integer PRIMARY KEY, starttime text, endtime text)" % table)
+        def wrapper(*args, **kwargs):
+            kwargs[self.keyword] = self
+            rv = callback(*args, **kwargs)
+            return rv
+        return wrapper
 
-                elif child.tag == "start-valid-time":
-                    sequence += 1
+    # De-installation from Bottle as a plugin
+    def close(self):
+        logger.info("Closing Forecast")
 
-                    logging.debug("Inserting (Replacing) record %s in %s" % (sequence, table))
-                    cursor.execute("INSERT OR REPLACE INTO [%s] VALUES (?, ?, null)" % table, (sequence, child.text))
+    def start(self):
+        logger.info("Opening Forecast")
 
-                elif child.tag == "end-valid-time":
-                    logging.debug("Updating record %s with %s in %s" % (sequence, child.text, table))
-                    cursor.execute("UPDATE [%s] SET endtime=? where sequence=?" % table, (child.text, sequence))
-
-            self.db_conn.commit()
+    def __load_timeseries(self, tree):
+        for layout in tree.getroot().iter(tag="time-layout"):
+            key = layout.find("layout-key").text
+            start_times = map(lambda time: time.text, layout.iter(tag="start-valid-time"))
+            end_times = map(lambda time: time.text, layout.iter(tag="end-valid-time"))
+            self.timespans[key] = zip(start_times, end_times) if any(end_times) else start_times
 
     def __load_liquid_precipitation(self, tree):
-        cursor = self.db_conn.cursor()
-
-        if self.db_destroy:
-            logging.warn("Dropping table precipitation")
-            cursor.execute("DROP TABLE IF EXISTS [precipitation]")
-
-        logging.debug("Creating table precipitation if it doesn't exist")
-        cursor.execute("CREATE TABLE IF NOT EXISTS [precipitation] (starttime text PRIMARY KEY, endtime text, precipitation real)")
-
         for precipitation in tree.getroot().iter(tag="precipitation"):
-            table = precipitation.attrib['time-layout']
+            time_layout = precipitation.attrib['time-layout']
             precip_type = precipitation.attrib['type']
 
             if precip_type == "liquid":
-                sequence = -1
+                times = iter(self.timespans[time_layout])
                 for value in precipitation.iter(tag="value"):
-                    sequence += 1
-
-                    cursor.execute("SELECT starttime, endtime FROM [%s] where sequence=?" % table, (sequence,))
-                    starttime, endtime = cursor.fetchone()
-
-                    logging.debug("Inserting record %s with %s in precipitation_liquid" % (starttime, value.text))
-                    cursor.execute("INSERT OR REPLACE INTO [precipitation_liquid] VALUES (?, ?, ?)", (starttime, endtime, value.text))
-                self.db_conn.commit()
-
-    def __load_liquid_precipitation(self, tree):
-        cursor = self.db_conn.cursor()
-
-        if self.db_destroy:
-            logging.warn("Dropping table precipitation")
-            cursor.execute("DROP TABLE IF EXISTS [precipitation_liquid]")
-
-        logging.debug("Creating table precipitation if it doesn't exist")
-        cursor.execute("CREATE TABLE IF NOT EXISTS [precipitation_liquid] (starttime text PRIMARY KEY, endtime text, precipitation real)")
-
-        for precipitation in tree.getroot().iter(tag="precipitation"):
-            table = precipitation.attrib['time-layout']
-            precip_type = precipitation.attrib['type']
-
-            if precip_type == "liquid":
-                sequence = -1
-                for value in precipitation.iter(tag="value"):
-                    sequence += 1
-
-                    cursor.execute("SELECT starttime, endtime FROM [%s] where sequence=?" % table, (sequence,))
-                    starttime, endtime = cursor.fetchone()
-
-                    logging.debug("Inserting liquid %s with %s in precipitation_liquid" % (starttime, value.text))
-                    cursor.execute("INSERT OR REPLACE INTO [precipitation_liquid] VALUES (?, ?, ?)", (starttime, endtime, value.text))
-                self.db_conn.commit()
+                    starttime, endtime = times.next()
+                    self.precipitations.append((starttime, value.text))
 
     def __load_hourly_temperature(self, tree):
-        cursor = self.db_conn.cursor()
-
-        if self.db_destroy:
-            logging.warn("Dropping table temperature_hourly")
-            cursor.execute("DROP TABLE IF EXISTS [temperature_hourly]")
-
-        logging.debug("Creating table temperature_hourly if it doesn't exist")
-        cursor.execute("CREATE TABLE IF NOT EXISTS [temperature_hourly] (starttime text PRIMARY KEY, temperature integer, dewpoint integer)")
-
-        for precipitation in tree.getroot().iter(tag="temperature"):
-            table = precipitation.attrib['time-layout']
-            temp_type = precipitation.attrib['type']
+        for temperature in tree.getroot().iter(tag="temperature"):
+            time_layout = temperature.attrib['time-layout']
+            temp_type = temperature.attrib['type']
 
             if temp_type == "hourly":
-                sequence = -1
-                for value in precipitation.iter(tag="value"):
-                    sequence += 1
-
-                    cursor.execute("SELECT starttime FROM [%s] where sequence=?" % table, (sequence,))
-                    starttime = cursor.fetchone()[0]
-
-                    logging.debug("Inserting temp %s with %s in temperature_hourly" % (starttime, value.text))
-                    cursor.execute("INSERT OR REPLACE INTO [temperature_hourly] VALUES (?, ?, null)", (starttime, value.text))
-                self.db_conn.commit()
+                times = iter(self.timespans[time_layout])
+                for value in temperature.iter(tag="value"):
+                    self.temperatures.append((times.next(), value.text))
 
             elif temp_type == "dew point":
-                sequence = -1
-                for value in precipitation.iter(tag="value"):
-                    sequence += 1
-
-                    cursor.execute("SELECT starttime FROM [%s] where sequence=?" % table, (sequence,))
-                    starttime = cursor.fetchone()[0]
-
-                    logging.debug("Updating dewpoint %s with %s in temperature_hourly" % (starttime, value.text))
-                    cursor.execute("UPDATE [temperature_hourly] SET dewpoint=? WHERE starttime=?", (value.text, starttime))
-                self.db_conn.commit()
+                times = iter(self.timespans[time_layout])
+                for value in temperature.iter(tag="value"):
+                    self.dewpoints.append((times.next(), value.text))
 
     def __load_hourly_wind(self, tree):
-        cursor = self.db_conn.cursor()
-
-        if self.db_destroy:
-            logging.warn("Dropping table wind_hourly")
-            cursor.execute("DROP TABLE IF EXISTS [wind_hourly]")
-
-        logging.debug("Creating table wind_hourly if it doesn't exist")
-        cursor.execute("CREATE TABLE IF NOT EXISTS [wind_hourly] (starttime text PRIMARY KEY, speed integer, direction integer)")
-
-        for precipitation in tree.getroot().iter(tag="wind-speed"):
-            table = precipitation.attrib['time-layout']
-            wind_type = precipitation.attrib['type']
+        for speed in tree.getroot().iter(tag="wind-speed"):
+            time_layout = speed.attrib['time-layout']
+            wind_type = speed.attrib['type']
 
             if wind_type == "sustained":
-                sequence = -1
-                for value in precipitation.iter(tag="value"):
-                    sequence += 1
+                times = iter(self.timespans[time_layout])
+                for value in speed.iter(tag="value"):
+                    self.winds.append((times.next(), value.text))
 
-                    cursor.execute("SELECT starttime FROM [%s] where sequence=?" % table, (sequence,))
-                    starttime = cursor.fetchone()[0]
-
-                    logging.debug("Inserting speed %s with %s in wind_hourly" % (starttime, value.text))
-                    cursor.execute("INSERT OR REPLACE INTO [wind_hourly] VALUES (?, ?, null)", (starttime, value.text))
-                self.db_conn.commit()
-
-        for precipitation in tree.getroot().iter(tag="direction"):
-            table = precipitation.attrib['time-layout']
-            wind_type = precipitation.attrib['type']
+        for direction in tree.getroot().iter(tag="direction"):
+            table = direction.attrib['time-layout']
+            wind_type = direction.attrib['type']
 
             if wind_type == "wind":
                 sequence = -1
-                for value in precipitation.iter(tag="value"):
+                for value in direction.iter(tag="value"):
                     sequence += 1
+                    starttime, speed = self.winds[sequence]
+                    self.winds[sequence] = (starttime, speed, value.text)
 
-                    cursor.execute("SELECT starttime FROM [%s] where sequence=?" % table, (sequence,))
-                    starttime = cursor.fetchone()[0]
+    def __load_hourly_cloudcover(self, tree):
+        for cover in tree.getroot().iter(tag="cloud-amount"):
+            time_layout = cover.attrib['time-layout']
+            cloud_type = cover.attrib['type']
 
-                    logging.debug("Updating direction %s with %s in wind_hourly" % (starttime, value.text))
-                    cursor.execute("UPDATE [wind_hourly] SET direction=? WHERE starttime=?", (value.text, starttime))
-                self.db_conn.commit()
+            if cloud_type == "total":
+                times = iter(self.timespans[time_layout])
+                for value in cover.iter(tag="value"):
+                    self.clouds.append((times.next(), value.text))
 
     def update(self):
-        layouts = {}
-        cursor = self.db_conn.cursor()
         resp = urllib.urlopen(self.url)
         tree = ElementTree.parse(resp)
 
-        self.__load_timetables(tree)
+        self.__load_timeseries(tree)
         self.__load_liquid_precipitation(tree)
         self.__load_hourly_temperature(tree)
         self.__load_hourly_wind(tree)
+        self.__load_hourly_cloudcover(tree)
 
     def temperature(self):
-        cursor = self.db_conn.cursor()
-        cursor.execute("SELECT * FROM [temperature_hourly]")
-        return cursor.fetchall()
+        return self.temperatures
+
+    def dewpoint(self):
+        return self.dewpoints
 
     def precipitation(self):
-        cursor = self.db_conn.cursor()
-        cursor.execute("SELECT * FROM [precipitation_liquid]")
-        return cursor.fetchall()
+        return self.precipitations
 
     def wind(self):
-        cursor = self.db_conn.cursor()
-        cursor.execute("SELECT * FROM [wind_hourly]")
-        return cursor.fetchall()
+        return self.winds
+
+    def cloudcover(self):
+        return self.clouds
+
+class PluginError(Exception):
+    pass
+
+Plugin = Forecast

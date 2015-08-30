@@ -7,9 +7,8 @@ except ImportError:
 import inspect
 import logging
 import time
-from config import configuration
 
-logger = logging.getLogger('basemon')
+logger = logging.getLogger('temperature')
 
 class Temperature(object):
     name = 'temperature'

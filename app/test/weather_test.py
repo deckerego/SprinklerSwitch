@@ -2,14 +2,25 @@ import os,sys
 sys.path.insert(1, os.path.join(sys.path[0], '..'))
 from forecast import Forecast
 
-forecast = Forecast(39.5119795, -82.1713632)
+forecast = Forecast()
 forecast.update()
 
+print "\n*** Temperature ***"
 for temp in forecast.temperature():
     print temp
 
+print "\n*** Dew Point ***"
+for temp in forecast.dewpoint():
+    print temp
+
+print "\n*** Precipitation ***"
 for precip in forecast.precipitation():
     print precip
 
+print "\n*** Wind ***"
 for wind in forecast.wind():
     print wind
+
+print "\n*** Cloud Cover ***"
+for cloudcover in forecast.cloudcover():
+    print cloudcover

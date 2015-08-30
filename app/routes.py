@@ -53,6 +53,10 @@ def get_environment(temperature):
 	status_val = status if status else "null"
 	return '{ "relative_humidity": %s, "celsius": %s, "fahrenheit": %s, "status": %s }' % (humidity_val, celsius_val, fahrenheit_val, status_val)
 
+@application.get('/forecast/temperature')
+def get_temperature(forecast):
+	
+
 @application.get('/switch/<button:int>')
 def get_switch_status(button):
 	return '{ "enabled": %s }' % ("true" if gpio.is_enabled(button) else "false")
