@@ -53,7 +53,10 @@ function loadTemperature(canvas) {
 
   request.onload = function(evt) {
     var response = JSON.parse(request.responseText);
-    var hours = response.times.map(function(x) { return new Date(x).toLocaleTimeString(); });
+    var hours = response.times.map(function(x) {
+      var date = new Date(x);
+      return ""+date.getMonth()+"/"+date.getDate()+" "+date.getHours();
+    });
 
     var data = {
         labels: hours,
@@ -85,6 +88,7 @@ function loadTemperature(canvas) {
     var hourlyTemps = new Chart(ctx).Line(data, {
       animation: false,
       pointHitDetectionRadius : 1,
+      responsive: true,
     });
   };
 
@@ -97,7 +101,10 @@ function loadWind(canvas) {
 
   request.onload = function(evt) {
     var response = JSON.parse(request.responseText);
-    var hours = response.times.map(function(x) { return new Date(x).toLocaleTimeString(); });
+    var hours = response.times.map(function(x) {
+      var date = new Date(x);
+      return ""+date.getMonth()+"/"+date.getDate()+" "+date.getHours();
+    });
 
     var data = {
         labels: hours,
@@ -118,7 +125,8 @@ function loadWind(canvas) {
     var ctx = document.getElementById(canvas).getContext("2d");
     var windSpeeds = new Chart(ctx).Line(data, {
       animation: false,
-      pointHitDetectionRadius : 1
+      pointHitDetectionRadius : 1,
+      responsive: true,
     });
   };
 
@@ -131,7 +139,10 @@ function loadPrecipitation(canvas) {
 
   request.onload = function(evt) {
     var response = JSON.parse(request.responseText);
-    var hours = response.times.map(function(x) { return new Date(x).toLocaleTimeString(); });
+    var hours = response.times.map(function(x) {
+      var date = new Date(x);
+      return ""+date.getMonth()+"/"+date.getDate()+" "+date.getHours();
+    });
 
     var data = {
         labels: hours,
@@ -156,7 +167,8 @@ function loadPrecipitation(canvas) {
       scaleOverride: true,
       scaleSteps: 10,
       scaleStepWidth: 0.1,
-      scaleStartValue: 0
+      scaleStartValue: 0,
+      responsive: true,
     });
   };
 
@@ -169,7 +181,10 @@ function loadCloudCover(canvas) {
 
   request.onload = function(evt) {
     var response = JSON.parse(request.responseText);
-    var hours = response.times.map(function(x) { return new Date(x).toLocaleTimeString(); });
+    var hours = response.times.map(function(x) {
+      var date = new Date(x);
+      return ""+date.getMonth()+"/"+date.getDate()+" "+date.getHours();
+    });
 
     var data = {
         labels: hours,
@@ -194,7 +209,9 @@ function loadCloudCover(canvas) {
       scaleOverride: true,
       scaleSteps: 10,
       scaleStepWidth: 10,
-      scaleStartValue: 0
+      scaleStartValue: 0,
+      responsive: true,
+      bezierCurve : false,
     });
   };
 
