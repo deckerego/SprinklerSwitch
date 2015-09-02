@@ -4,9 +4,11 @@ import sqlite3
 import logging
 import base64
 import inspect
+from datetime import datetime
 from config import configuration
 
 logger = logging.getLogger('temperature')
+logger.setLevel(10)
 noaa_url = "http://graphical.weather.gov/xml/sample_products/browser_interface/ndfdXMLclient.php?lat=%s&lon=%s&product=time-series&Unit=e"
 
 class Forecast(object):
@@ -46,6 +48,7 @@ class Forecast(object):
         logger.info("Closing Forecast")
 
     def __load_timeseries(self, tree):
+        logger.debug("Refreshing timeseries layouts")
         self.timespans = {}
 
         for layout in tree.getroot().iter(tag="time-layout"):
@@ -55,6 +58,7 @@ class Forecast(object):
             self.timespans[key] = zip(start_times, end_times) if any(end_times) else start_times
 
     def __load_liquid_precipitation(self, tree):
+        logger.debug("Refreshing precipitation data")
         self.precipitations = []
 
         for precipitation in tree.getroot().iter(tag="precipitation"):
@@ -68,6 +72,7 @@ class Forecast(object):
                     self.precipitations.append((starttime, float(value.text)))
 
     def __load_hourly_temperature(self, tree):
+        logger.debug("Refreshing temperature data")
         self.temperatures = []
 
         for temperature in tree.getroot().iter(tag="temperature"):
@@ -87,6 +92,7 @@ class Forecast(object):
                     self.temperatures[sequence] = (starttime, hourly, int(value.text))
 
     def __load_hourly_wind(self, tree):
+        logger.debug("Refreshing wind data")
         self.winds = []
 
         for speed in tree.getroot().iter(tag="wind-speed"):
@@ -110,6 +116,7 @@ class Forecast(object):
                     self.winds[sequence] = (starttime, speed, int(value.text))
 
     def __load_hourly_cloudcover(self, tree):
+        logger.debug("Refreshing cloud cover data")
         self.clouds = []
 
         for cover in tree.getroot().iter(tag="cloud-amount"):
@@ -131,18 +138,30 @@ class Forecast(object):
         self.__load_hourly_temperature(tree)
         self.__load_hourly_wind(tree)
         self.__load_hourly_cloudcover(tree)
+        self.updated_datetime = datetime.now()
 
     def temperature(self):
-        return self.temperatures
+        now = datetime.now()
+        future_temps = filter(lambda (time, hourly, dew): now < datetime.strptime(time[:-6], "%Y-%m-%dT%H:%M:%S"), self.temperatures)
+        return future_temps
 
     def precipitation(self):
-        return self.precipitations
+        now = datetime.now()
+        future_precip = filter(lambda (time, inches): now < datetime.strptime(time[:-6], "%Y-%m-%dT%H:%M:%S"), self.precipitations)
+        return future_precip
 
     def wind(self):
-        return self.winds
+        now = datetime.now()
+        future_wind = filter(lambda (time, speed, direction): now < datetime.strptime(time[:-6], "%Y-%m-%dT%H:%M:%S"), self.winds)
+        return future_wind
 
     def cloudcover(self):
-        return self.clouds
+        now = datetime.now()
+        future_clouds = filter(lambda (time, percentage): now < datetime.strptime(time[:-6], "%Y-%m-%dT%H:%M:%S"), self.clouds)
+        return future_clouds
+
+    def last_updated(self):
+        return self.updated_datetime.isoformat()
 
 class PluginError(Exception):
     pass

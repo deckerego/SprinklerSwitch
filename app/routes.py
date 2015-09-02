@@ -64,6 +64,7 @@ def get_environment(temperature):
 def get_temperature(forecast):
 	temperatures = {}
 	starttimes, hourlys, dewpoints = zip(*forecast.temperature())
+	temperatures['lastUpdated'] = forecast.last_updated()
 	temperatures['times'] = starttimes
 	temperatures['hourly'] = hourlys
 	temperatures['dewpoints'] = dewpoints
@@ -73,6 +74,7 @@ def get_temperature(forecast):
 def get_precipitation(forecast):
 	precips = {}
 	starttimes, precipitation = zip(*forecast.precipitation())
+	precips['lastUpdated'] = forecast.last_updated()
 	precips['times'] = starttimes
 	precips['inches'] = precipitation
 	return json.dumps(precips)
@@ -81,6 +83,7 @@ def get_precipitation(forecast):
 def get_wind(forecast):
 	winds = {}
 	starttimes, speeds, directions = zip(*forecast.wind())
+	winds['lastUpdated'] = forecast.last_updated()
 	winds['times'] = starttimes
 	winds['speed'] = speeds
 	winds['direction'] = directions
@@ -90,6 +93,7 @@ def get_wind(forecast):
 def get_cloudcover(forecast):
 	clouds = {}
 	starttimes, coverages = zip(*forecast.cloudcover())
+	clouds['lastUpdated'] = forecast.last_updated()
 	clouds['times'] = starttimes
 	clouds['percentage'] = coverages
 	return json.dumps(clouds)
@@ -97,7 +101,7 @@ def get_cloudcover(forecast):
 @application.put('/forecast/update')
 def update_forecast(forecast):
 	forecast.update()
-	return '{ "status": "Update Requested" }'
+	return '{ "lastUpdated": "%s" }' % forecast.last_updated()
 
 @application.get('/switch/<button:int>')
 def get_switch_status(button):
