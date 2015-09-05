@@ -17,6 +17,7 @@ import time
 import datetime
 from HIH6130 import Temperature
 from noaa import Forecast
+from jabber import Jabber
 from config import configuration
 from bottle import Bottle, HTTPResponse, static_file, get, put, request, response, template
 
@@ -24,12 +25,12 @@ instance_name = configuration.get('instance_name')
 
 temperature = Temperature()
 forecast = Forecast()
+jabber_service = Jabber(configuration.get('xmpp_username'), configuration.get('xmpp_password'), temperature)
 
 application = Bottle()
 application.install(temperature)
 application.install(forecast)
-
-last_area_detected = None
+application.install(jabber_service)
 
 @application.route('/favicon.ico')
 def send_favicon():

@@ -1,6 +1,14 @@
 import argparse
 
 config_values = {
+  'instance_name': 'Sprinkler',
+  'xmpp_server_host': 'talk.google.com',
+  'xmpp_server_port': '5222',
+  'xmpp_username': '@gmail.com',
+  'xmpp_password': 'password',
+  'xmpp_recipients': ['@gmail.com'],
+  'latitude': 39.5119795,
+  'longitude': -82.1713632
 }
 
 class Configuration(object):

@@ -23,13 +23,14 @@ class Forecast(object):
     # This is invoked when installed as a Bottle plugin
     def setup(self, app):
         self.routes = app
-        self.update()
 
         for other in app.plugins:
             if not isinstance(other, Forecast):
                 continue
             if other.keyword == self.keyword:
                 raise PluginError("Found another instance of Forecast running!")
+
+        self.update()
 
     # This is invoked within Bottle as part of each route when installed
     def apply(self, callback, route):
