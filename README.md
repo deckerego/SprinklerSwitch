@@ -11,7 +11,7 @@ Currently the system fetches the forecast data from NOAA, visualizes the data on
 Installation
 ------------
 
-1. Install the base packages with `sudo apt-get install python-distribute python-dev python-smbus libapache2-mod-wsgi libapache2-mod-proxy-html libapache2-mod-authnz-external`
+1. Install the base packages with `sudo apt-get install python-distribute python-dev python-smbus libapache2-mod-proxy-html libapache2-mod-authnz-external monit`
 2. Install the GPIO userspace tools at https://projects.drogon.net/raspberry-pi/wiringpi/download-and-install/
 3. Install Node.JS as documented at https://learn.adafruit.com/node-embedded-development/installing-node-dot-js
 4. Install Bower using `npm install -g bower`
@@ -27,3 +27,5 @@ Installation
 14. Copy the service config files from config/etc into the appropriate /etc directory, altering them as needed.
 15. Create a copy of app/config.sample as /srv/app/config.py, altering config.py to fit your preferences
 16. Start up (or restart) Apache2
+17. Ensure config/etc/init.d/sprinkler has been copied to /etc/init.d, then install it using `update-rc.d sprinkler defaults`
+18. Start the webapp using `sudo service sprinkler start`

@@ -1,22 +1,18 @@
 <VirtualHost *:80>
-        WSGIDaemonProcess sprinkler user=www-data group=www-data processes=1 threads=4
-        WSGIScriptAlias /sprinkler /srv/sprinkler/routes.py
-
         ServerAdmin webmaster@localhost
 
         AddExternalAuth pwauth /usr/sbin/pwauth
         SetExternalAuthMethod pwauth pipe
 
-        <Directory /srv/sprinkler/>
+        ProxyPass /sprinkler http://localhost:9004
+
+        <Location /sprinkler>
                 AuthType Basic
                 AuthName "Sprinkler Switch"
                 AuthBasicProvider external
                 AuthExternal pwauth
                 Require valid-user
-
-                WSGIProcessGroup sprinkler
-                WSGIApplicationGroup %{RESOURCE}
-        </Directory>
+        </Location>
 
         ProxyPass /monit http://localhost:2812
 
