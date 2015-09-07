@@ -30,7 +30,8 @@ jabber_service = Jabber(configuration.get('xmpp_username'), configuration.get('x
 application = Bottle()
 application.install(temperature)
 application.install(forecast)
-application.install(jabber_service)
+#FIXME Right now two clients (like garagesec and sprinkler) can't co-exist
+#application.install(jabber_service)
 
 @application.route('/favicon.ico')
 def send_favicon():

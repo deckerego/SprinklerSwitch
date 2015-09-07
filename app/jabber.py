@@ -7,6 +7,7 @@ import gpio
 from config import configuration
 
 logger = logging.getLogger('sprinkler')
+logger.setLevel(20)
 
 class Jabber(sleekxmpp.ClientXMPP):
   name = 'jabber_xmpp'
@@ -19,8 +20,8 @@ class Jabber(sleekxmpp.ClientXMPP):
     self.instance_name = configuration.get('instance_name').lower()
     self.silent = False
     self.sprinkler_button = 0
-    self.add_event_handler('session_start', self.start)
-    self.add_event_handler('message', self.receive)
+    self.add_event_handler('session_start', self.start, threaded=False, disposable=True)
+    self.add_event_handler('message', self.receive, threaded=True, disposable=False)
 
   def __del__(self):
     self.close()
@@ -103,7 +104,6 @@ class Jabber(sleekxmpp.ClientXMPP):
         farenheit = ((celsius * 9) / 5) + 32
         message.reply("Temperature: %0.2fF, Humidity: %0.2f%%" % (farenheit, humidity)).send()
       else:
-        print "Uncaught command from %s: %s" % (from_account, message['body'])
         logger.info("Uncaught command from %s: %s" % (from_account, message['body']))
 
 class PluginError(Exception):
