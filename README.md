@@ -23,7 +23,7 @@ Installation
 10. Allow www-data to access the GPIO port by adding it to the gpio user group in /etc/group
 11. Allow www-data to access to I2C by adding it to the i2c user group in /etc/group
 12. Copy the files within the app/ directory into /srv/app
-13. Change into the /srv/app/views directory and execute `bower install bootstrap`
+13. Change into the /srv/app/views directory and execute `bower install Chart.js bootstrap`
 14. Copy the service config files from config/etc into the appropriate /etc directory, altering them as needed.
 15. Create a copy of app/config.sample as /srv/app/config.py, altering config.py to fit your preferences
 16. Start up (or restart) Apache2
