@@ -4,12 +4,22 @@ import sqlite3
 import logging
 import base64
 import inspect
-from datetime import datetime
+from datetime import datetime, timedelta
+import time
 from config import configuration
 
 logger = logging.getLogger('temperature')
 logger.setLevel(10)
 noaa_url = "http://graphical.weather.gov/xml/sample_products/browser_interface/ndfdXMLclient.php?lat=%s&lon=%s&product=time-series&Unit=e"
+
+def convert_to_utc(datestr):
+    hours = int(datestr[-6:-3]) + time.localtime().tm_isdst # The NOAA feed doesn't take daylight savings time into account - so we must instead
+    sign = hours / abs(hours) # Determine if we are subtracting time or adding time
+    minutes = sign * int(datestr[-2:])
+    dttime = datetime.strptime(datestr[:-6], "%Y-%m-%dT%H:%M:%S")
+    delta = timedelta(hours=hours, minutes=minutes)
+    return (dttime - delta).strftime("%Y-%m-%dT%H:%M:%S+00:00") # Force this to be UTC
+
 
 class Forecast(object):
     name = 'forecast'
@@ -54,8 +64,8 @@ class Forecast(object):
 
         for layout in tree.getroot().iter(tag="time-layout"):
             key = layout.find("layout-key").text
-            start_times = map(lambda time: time.text, layout.iter(tag="start-valid-time"))
-            end_times = map(lambda time: time.text, layout.iter(tag="end-valid-time"))
+            start_times = map(lambda time: convert_to_utc(time.text), layout.iter(tag="start-valid-time"))
+            end_times = map(lambda time: convert_to_utc(time.text), layout.iter(tag="end-valid-time"))
             self.timespans[key] = zip(start_times, end_times) if any(end_times) else start_times
 
     def __load_liquid_precipitation(self, tree):
@@ -70,7 +80,8 @@ class Forecast(object):
                 times = iter(self.timespans[time_layout])
                 for value in precipitation.iter(tag="value"):
                     starttime, endtime = times.next()
-                    self.precipitations.append((starttime, float(value.text)))
+                    if value.attrib['type'] == "NDFD":
+                        self.precipitations.append((starttime, float(value.text)))
 
     def __load_hourly_temperature(self, tree):
         logger.debug("Refreshing temperature data")
@@ -83,14 +94,17 @@ class Forecast(object):
             if temp_type == "hourly":
                 times = iter(self.timespans[time_layout])
                 for value in temperature.iter(tag="value"):
-                    self.temperatures.append((times.next(), int(value.text)))
+                    starttime = times.next()
+                    if value.attrib['type'] == "NDFD":
+                        self.temperatures.append((starttime, int(value.text)))
 
             elif temp_type == "dew point":
                 sequence = -1
                 for value in temperature.iter(tag="value"):
-                    sequence += 1
-                    starttime, hourly = self.temperatures[sequence]
-                    self.temperatures[sequence] = (starttime, hourly, int(value.text))
+                    if value.attrib['type'] == "NDFD":
+                        sequence += 1
+                        starttime, hourly = self.temperatures[sequence]
+                        self.temperatures[sequence] = (starttime, hourly, int(value.text))
 
     def __load_hourly_wind(self, tree):
         logger.debug("Refreshing wind data")
@@ -103,7 +117,9 @@ class Forecast(object):
             if wind_type == "sustained":
                 times = iter(self.timespans[time_layout])
                 for value in speed.iter(tag="value"):
-                    self.winds.append((times.next(), int(value.text)))
+                    starttime = times.next()
+                    if value.attrib['type'] == "NDFD":
+                        self.winds.append((starttime, int(value.text)))
 
         for direction in tree.getroot().iter(tag="direction"):
             table = direction.attrib['time-layout']
@@ -112,9 +128,10 @@ class Forecast(object):
             if wind_type == "wind":
                 sequence = -1
                 for value in direction.iter(tag="value"):
-                    sequence += 1
-                    starttime, speed = self.winds[sequence]
-                    self.winds[sequence] = (starttime, speed, int(value.text))
+                    if value.attrib['type'] == "NDFD":
+                        sequence += 1
+                        starttime, speed = self.winds[sequence]
+                        self.winds[sequence] = (starttime, speed, int(value.text))
 
     def __load_hourly_cloudcover(self, tree):
         logger.debug("Refreshing cloud cover data")
@@ -127,7 +144,9 @@ class Forecast(object):
             if cloud_type == "total":
                 times = iter(self.timespans[time_layout])
                 for value in cover.iter(tag="value"):
-                    self.clouds.append((times.next(), int(value.text) if value.text else None))
+                    starttime = times.next()
+                    if value.attrib['type'] == "NDFD":
+                        self.clouds.append((starttime, int(value.text) if value.text else None))
 
     def update(self):
         logger.info("Refreshing data from NOAA")
@@ -142,24 +161,16 @@ class Forecast(object):
         self.updated_datetime = datetime.now()
 
     def temperature(self):
-        now = datetime.now()
-        future_temps = filter(lambda (time, hourly, dew): now < datetime.strptime(time[:-6], "%Y-%m-%dT%H:%M:%S"), self.temperatures)
-        return future_temps
+        return self.temperatures
 
     def precipitation(self):
-        now = datetime.now()
-        future_precip = filter(lambda (time, inches): now < datetime.strptime(time[:-6], "%Y-%m-%dT%H:%M:%S"), self.precipitations)
-        return future_precip
+        return self.precipitations
 
     def wind(self):
-        now = datetime.now()
-        future_wind = filter(lambda (time, speed, direction): now < datetime.strptime(time[:-6], "%Y-%m-%dT%H:%M:%S"), self.winds)
-        return future_wind
+        return self.winds
 
     def cloudcover(self):
-        now = datetime.now()
-        future_clouds = filter(lambda (time, percentage): now < datetime.strptime(time[:-6], "%Y-%m-%dT%H:%M:%S"), self.clouds)
-        return future_clouds
+        return self.clouds
 
     def last_updated(self):
         return self.updated_datetime.isoformat()
