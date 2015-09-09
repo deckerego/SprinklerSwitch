@@ -148,6 +148,31 @@ class Forecast(object):
                     if value.attrib['type'] == "NDFD":
                         self.clouds.append((starttime, int(value.text) if value.text else None))
 
+    def __load_hourly_humidity(self, tree):
+        logger.debug("Refreshing humidity data")
+        self.humidities = []
+
+        for apparent_temp in tree.getroot().iter(tag="temperature"):
+            time_layout = apparent_temp.attrib['time-layout']
+            temperature_type = apparent_temp.attrib['type']
+
+            if temperature_type == "apparent":
+                times = iter(self.timespans[time_layout])
+                for value in apparent_temp.iter(tag="value"):
+                    starttime = times.next()
+                    self.humidities.append((starttime, int(value.text)))
+
+        for relative_humidity in tree.getroot().iter(tag="humidity"):
+            table = relative_humidity.attrib['time-layout']
+            humidity_type = relative_humidity.attrib['type']
+
+            if humidity_type == "relative":
+                sequence = -1
+                for value in relative_humidity.iter(tag="value"):
+                    sequence += 1
+                    starttime, apparent_temp = self.humidities[sequence]
+                    self.humidities[sequence] = (starttime, apparent_temp, int(value.text))
+
     def update(self):
         logger.info("Refreshing data from NOAA")
         resp = urllib.urlopen(self.url)
@@ -158,6 +183,7 @@ class Forecast(object):
         self.__load_hourly_temperature(tree)
         self.__load_hourly_wind(tree)
         self.__load_hourly_cloudcover(tree)
+        self.__load_hourly_humidity(tree)
         self.updated_datetime = datetime.now()
 
     def temperature(self):
@@ -171,6 +197,9 @@ class Forecast(object):
 
     def cloudcover(self):
         return self.clouds
+
+    def humidity(self):
+        return self.humidities
 
     def last_updated(self):
         return self.updated_datetime.isoformat()

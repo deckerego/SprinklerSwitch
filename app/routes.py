@@ -100,6 +100,16 @@ def get_cloudcover(forecast):
 	clouds['percentage'] = coverages
 	return json.dumps(clouds)
 
+@application.get('/forecast/humidity')
+def get_humidity(forecast):
+	humidity = {}
+	starttimes, apparent_temp, relative_humidity = zip(*forecast.humidity())
+	humidity['lastUpdated'] = forecast.last_updated()
+	humidity['times'] = starttimes
+	humidity['apparentTemperature'] = apparent_temp
+	humidity['relativeHumidity'] = relative_humidity
+	return json.dumps(humidity)
+
 @application.put('/forecast/update')
 def update_forecast(forecast):
 	forecast.update()

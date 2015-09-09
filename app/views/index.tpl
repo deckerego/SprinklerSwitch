@@ -16,8 +16,8 @@
 				</ul>
 				<ul class="nav navbar-nav navbar-right">
 					<li><p class="navbar-text">Sprinker Enabled: <span id="enabled"></span></p></li>
-					<li><p class="navbar-text">Temperature: <span id="temperature" /></span></p></li>
-					<li><p class="navbar-text">Humidity: <span id="humidity" /></span></p></li>
+					<li><p class="navbar-text">Temperature: <span id="sensorTemperature" /></span></p></li>
+					<li><p class="navbar-text">Humidity: <span id="sensorHumidity" /></span></p></li>
 				</ul>
 			</div>
 		</nav>
@@ -44,18 +44,30 @@
 					<canvas id="cloudCover"></canvas>
 				</div>
 	    </div>
+
+			<div class="row">
+	      <div class="col-lg-6">
+					Humidity<br/>
+					<canvas id="humidity"></canvas>
+				</div>
+			  <div class="col-lg-6">
+
+				</div>
+	    </div>
 		</div>
 
 		<script src="installed/jquery/dist/jquery.min.js"></script>
 		<script type="text/javascript" src="installed/Chart.js/Chart.min.js"></script>
 		<script src="installed/bootstrap/dist/js/bootstrap.min.js"></script>
 		<script type="text/javascript" src="js/events.js"></script>
+		<script type="text/javascript" src="js/graphs.js"></script>
 		<script type="text/javascript">
 			loadTemperature("hourlyTemps");
 			loadPrecipitation("precipitation");
 			loadWind("wind");
 			loadCloudCover("cloudCover");
-			loadThermals("temperature", "humidity");
+			loadHumidity("humidity");
+			loadThermals("sensorTemperature", "sensorHumidity");
 			sprinklerStatus("enabled", "sensor");
 		</script>
 	</body>
