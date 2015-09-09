@@ -146,7 +146,7 @@ class Forecast(object):
                 for value in cover.iter(tag="value"):
                     starttime = times.next()
                     if value.attrib['type'] == "NDFD":
-                        self.clouds.append((starttime, int(value.text) if value.text else None))
+                        self.clouds.append((starttime, int(value.text) if value.text else 0))
 
     def __load_hourly_humidity(self, tree):
         logger.debug("Refreshing humidity data")
