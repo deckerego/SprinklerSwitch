@@ -40,6 +40,7 @@ function loadTemperature(canvas) {
       animation: false,
       pointHitDetectionRadius : 1,
       responsive: true,
+      multiTooltipTemplate: "<%= datasetLabel %> - <%= value %>",
     });
   };
 
@@ -211,6 +212,7 @@ function loadHumidity(canvas) {
       animation: false,
       pointHitDetectionRadius : 1,
       responsive: true,
+      multiTooltipTemplate: "<%= datasetLabel %> - <%= value %>",
     });
   };
 
