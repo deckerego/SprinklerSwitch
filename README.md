@@ -20,12 +20,10 @@ Installation
 7. Clone this repository or download the .ZIP, which will include the Bottle webapp and some admin configs/scripts
 8. Install SprinklerSwitch's dependencies using pip install -r app/requirements.txt
 9. Expose the GPIO port you connect the garage door opener to using the WiringPi GPIO Utility, e.g. `gpio export 27 out`. You may want to add this statement to `/etc/rc.local` so that it will be exported at startup.
-10. Allow www-data to access the GPIO port by adding it to the gpio user group in /etc/group
-11. Allow www-data to access to I2C by adding it to the i2c user group in /etc/group
-12. Copy the files within the app/ directory into /srv/app
-13. Change into the /srv/app/views directory and execute `bower install Chart.js bootstrap`
-14. Copy the service config files from config/etc into the appropriate /etc directory, altering them as needed.
-15. Create a copy of app/config.sample as /srv/app/config.py, altering config.py to fit your preferences
-16. Start up (or restart) Apache2
-17. Ensure config/etc/init.d/sprinkler has been copied to /etc/init.d, then install it using `update-rc.d sprinkler defaults`
-18. Start the webapp using `sudo service sprinkler start`
+10. Copy the files within the app/ directory into /srv/app
+11. Change into the /srv/app/views directory and execute `bower install Chart.js bootstrap`
+12. Copy the service config files from config/etc into the appropriate /etc directory, altering them as needed.
+13. Create a copy of app/config.sample as /srv/app/config.py, altering config.py to fit your preferences
+14. Start up (or restart) Apache2
+15. Ensure config/etc/init.d/sprinkler has been copied to /etc/init.d, then install it using `update-rc.d sprinkler defaults`
+16. Start the webapp using `sudo service sprinkler start`
