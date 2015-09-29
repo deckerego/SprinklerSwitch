@@ -98,13 +98,20 @@ class Forecast(object):
                     if value.attrib['type'] == "NDFD":
                         self.temperatures.append((starttime, int(value.text)))
 
-            elif temp_type == "dew point":
-                sequence = -1
+    def __load_dew_point(self, tree):
+        logger.debug("Refreshing dewpoint data")
+        self.dewpoints = []
+
+        for temperature in tree.getroot().iter(tag="temperature"):
+            time_layout = temperature.attrib['time-layout']
+            temp_type = temperature.attrib['type']
+
+            if temp_type == "dew point":
+                times = iter(self.timespans[time_layout])
                 for value in temperature.iter(tag="value"):
+                    starttime = times.next()
                     if value.attrib['type'] == "NDFD":
-                        sequence += 1
-                        starttime, hourly = self.temperatures[sequence]
-                        self.temperatures[sequence] = (starttime, hourly, int(value.text))
+                        self.dewpoints.append((starttime, int(value.text)))
 
     def __load_hourly_wind(self, tree):
         logger.debug("Refreshing wind data")
@@ -148,9 +155,9 @@ class Forecast(object):
                     if value.attrib['type'] == "NDFD":
                         self.clouds.append((starttime, int(value.text) if value.text else 0))
 
-    def __load_hourly_humidity(self, tree):
-        logger.debug("Refreshing humidity data")
-        self.humidities = []
+    def __load_apparent_temperature(self, tree):
+        logger.debug("Refreshing apparent temperature data")
+        self.apparent_temps = []
 
         for apparent_temp in tree.getroot().iter(tag="temperature"):
             time_layout = apparent_temp.attrib['time-layout']
@@ -160,18 +167,21 @@ class Forecast(object):
                 times = iter(self.timespans[time_layout])
                 for value in apparent_temp.iter(tag="value"):
                     starttime = times.next()
-                    self.humidities.append((starttime, int(value.text)))
+                    self.apparent_temps.append((starttime, int(value.text)))
+
+    def __load_hourly_humidity(self, tree):
+        logger.debug("Refreshing humidity data")
+        self.humidities = []
 
         for relative_humidity in tree.getroot().iter(tag="humidity"):
-            table = relative_humidity.attrib['time-layout']
+            time_layout = relative_humidity.attrib['time-layout']
             humidity_type = relative_humidity.attrib['type']
 
             if humidity_type == "relative":
-                sequence = -1
+                times = iter(self.timespans[time_layout])
                 for value in relative_humidity.iter(tag="value"):
-                    sequence += 1
-                    starttime, apparent_temp = self.humidities[sequence]
-                    self.humidities[sequence] = (starttime, apparent_temp, int(value.text))
+                    starttime = times.next()
+                    self.humidities.append((starttime, int(value.text)))
 
     def update(self):
         logger.info("Refreshing data from NOAA")
@@ -181,13 +191,18 @@ class Forecast(object):
         self.__load_timeseries(tree)
         self.__load_liquid_precipitation(tree)
         self.__load_hourly_temperature(tree)
+        self.__load_dew_point(tree)
         self.__load_hourly_wind(tree)
         self.__load_hourly_cloudcover(tree)
+        self.__load_apparent_temperature(tree)
         self.__load_hourly_humidity(tree)
         self.updated_datetime = datetime.now()
 
     def temperature(self):
         return self.temperatures
+
+    def dewpoint(self):
+        return self.dewpoints
 
     def precipitation(self):
         return self.precipitations
@@ -197,6 +212,9 @@ class Forecast(object):
 
     def cloudcover(self):
         return self.clouds
+
+    def apparent_temperature(self):
+        return self.apparent_temps
 
     def humidity(self):
         return self.humidities

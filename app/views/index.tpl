@@ -28,16 +28,16 @@
 					Temperature<br/>
 					<canvas id="hourlyTemps"></canvas>
 				</div>
-	      <div class="col-lg-6">
-					Precipitation<br/>
-					<canvas id="precipitation"></canvas>
+				<div class="col-lg-6">
+					Humidity<br/>
+					<canvas id="humidity"></canvas>
 				</div>
 			</div>
 
 			<div class="row">
-	      <div class="col-lg-6">
-					Wind Speed<br/>
-					<canvas id="wind"></canvas>
+				<div class="col-lg-6">
+					Precipitation<br/>
+					<canvas id="precipitation"></canvas>
 				</div>
 			  <div class="col-lg-6">
 					Cloud Cover<br/>
@@ -46,9 +46,9 @@
 	    </div>
 
 			<div class="row">
-	      <div class="col-lg-6">
-					Humidity<br/>
-					<canvas id="humidity"></canvas>
+				<div class="col-lg-6">
+					Wind Speed<br/>
+					<canvas id="wind"></canvas>
 				</div>
 			  <div class="col-lg-6">
 

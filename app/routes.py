@@ -65,10 +65,27 @@ def get_environment(temperature):
 @application.get('/forecast/temperature')
 def get_temperature(forecast):
 	temperatures = {}
-	starttimes, hourlys, dewpoints = zip(*forecast.temperature())
+	starttimes, hourlys = zip(*forecast.temperature())
 	temperatures['lastUpdated'] = forecast.last_updated()
 	temperatures['times'] = starttimes
 	temperatures['hourly'] = hourlys
+	return json.dumps(temperatures)
+
+@application.get('/forecast/apparentTemp')
+def get_apparent_temperature(forecast):
+	temperatures = {}
+	starttimes, hourlys = zip(*forecast.apparent_temperature())
+	temperatures['lastUpdated'] = forecast.last_updated()
+	temperatures['times'] = starttimes
+	temperatures['apparentTemperature'] = hourlys
+	return json.dumps(temperatures)
+
+@application.get('/forecast/dewpoint')
+def get_dewpoint(forecast):
+	temperatures = {}
+	starttimes, dewpoints = zip(*forecast.dewpoint())
+	temperatures['lastUpdated'] = forecast.last_updated()
+	temperatures['times'] = starttimes
 	temperatures['dewpoints'] = dewpoints
 	return json.dumps(temperatures)
 
@@ -103,10 +120,9 @@ def get_cloudcover(forecast):
 @application.get('/forecast/humidity')
 def get_humidity(forecast):
 	humidity = {}
-	starttimes, apparent_temp, relative_humidity = zip(*forecast.humidity())
+	starttimes, relative_humidity = zip(*forecast.humidity())
 	humidity['lastUpdated'] = forecast.last_updated()
 	humidity['times'] = starttimes
-	humidity['apparentTemperature'] = apparent_temp
 	humidity['relativeHumidity'] = relative_humidity
 	return json.dumps(humidity)
 
