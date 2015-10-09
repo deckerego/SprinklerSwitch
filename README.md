@@ -24,5 +24,5 @@ These installation instructions have been tested with the latest version of Rasp
 9. Copy the service config files from config/etc into the appropriate /etc directory, altering them as needed.
 10. Create a copy of app/config.sample as /srv/app/config.py, altering config.py to fit your preferences
 11. Start up (or restart) Apache2
-12. Ensure config/etc/init.d/sprinkler has been copied to /etc/init.d, then install it using `update-rc.d sprinkler defaults`
+12. Ensure config/etc/init.d/sprinkler has been copied to /etc/init.d, then install it using `sudo update-rc.d sprinkler defaults`
 13. Start the webapp using `sudo service sprinkler start`
