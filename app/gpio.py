@@ -1,11 +1,17 @@
 import time
+import logging
+
+logger = logging.getLogger('garagesec')
+logger.setLevel(20)
 
 WIRING_PI = True
 try:
 	import wiringpi
-	wiringpi.wiringPiSetupSys()
 except ImportError:
 	WIRING_PI = False
+	logger.error("Cannot initialize GPIO - Library Not Installed?")
+
+wiringpi.wiringPiSetupSys()
 
 button_pin = {
 	0: 27
@@ -13,6 +19,7 @@ button_pin = {
 
 def enable(button):
 	if not WIRING_PI:
+		logger.warn("Enabled but no GPIO initialized")
 		return False
 
 	pin = button_pin[button]
@@ -24,6 +31,7 @@ def enable(button):
 
 def disable(button):
 	if not WIRING_PI:
+		logger.warn("Disabled but no GPIO initialized")
 		return False
 
 	pin = button_pin[button]
