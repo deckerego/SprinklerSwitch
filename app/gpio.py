@@ -3,6 +3,7 @@ import time
 WIRING_PI = True
 try:
 	import wiringpi
+	wiringpi.wiringPiSetupSys()
 except ImportError:
 	WIRING_PI = False
 
@@ -16,9 +17,8 @@ def enable(button):
 
 	pin = button_pin[button]
 
-	io = wiringpi.GPIO(wiringpi.GPIO.WPI_MODE_SYS)
-	io.pinMode(pin, io.OUTPUT)
-	io.digitalWrite(pin, io.HIGH)
+	wiringpi.pinMode(pin, 1)
+	wiringpi.digitalWrite(pin, 1)
 
 	return True
 
@@ -28,9 +28,8 @@ def disable(button):
 
 	pin = button_pin[button]
 
-	io = wiringpi.GPIO(wiringpi.GPIO.WPI_MODE_SYS)
-	io.pinMode(pin, io.OUTPUT)
-	io.digitalWrite(pin, io.LOW)
+	wiringpi.pinMode(pin, 1)
+	wiringpi.digitalWrite(pin, 0)
 
 	return True
 
@@ -40,7 +39,6 @@ def is_enabled(button):
 
 	pin = button_pin[button]
 
-	io = wiringpi.GPIO(wiringpi.GPIO.WPI_MODE_SYS)
-	state = io.digitalRead(pin)
+	state = wiringpi.digitalRead(pin)
 
 	return state == 1
