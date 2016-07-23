@@ -8,8 +8,33 @@ At least that's the goal.
 Currently the system fetches the forecast data from NOAA, visualizes the data on a dashboard, and allows Raspberry Pi GPIO to switch the irrigation controller on or off as an expansion sensor module. This is available over a Web interface, allowing the irrigation system to be controlled remotely.
 
 
-Installation
-------------
+Security & OS Setup
+-------------------
+
+Ensure you install necessary updates and install a firewall (such as UFW) before proceeding. Rather than exposing motion and other services externally, we will be proxying them through Apache. This means the only ports you should need to open are port 80 (HTTP) and port 22 (SSH), especially since motion hasn't has as extensive vetting for security. As an example, you could setup a simple firewall as:
+~~~~
+sudo apt-get install ufw
+sudo ufw allow 80
+sudo ufw allow 22
+sudo ufw enable
+~~~~
+Bear in mind GarageSec uses BASIC HTTP authentication and does not necessarily support SSL out of the box (although you could definitely add it), so man-in-the-middle interception of your password is super-de-duper possible.
+
+Also - the latest version of Raspian (Jessie) doesn't bring up wireless interfaces on boot by default, even for the RPi 3. Which is odd. To fix this, make sure your wireless interfaces in `/etc/network/interfaces` are set to "auto," such as:
+~~~~
+auto wlan0
+allow-hotplug wlan0
+iface wlan0 inet manual
+    wpa-conf /etc/wpa_supplicant/wpa_supplicant.conf
+~~~~
+
+It may be a good idea to create a crontab entry to delete old captured videos, e.g. `0 1 * * * find /home/motion -ctime +14 -delete`
+
+To enable I2C communication for temperature and humidity monitoring, follow the I2C instructions from Adafruit available at https://learn.adafruit.com/adafruits-raspberry-pi-lesson-4-gpio-setup/configuring-i2c
+
+
+Software Installation
+---------------------
 
 These installation instructions have been tested with the latest version of Raspian "Jessie" with device trees enabled (which I believe is the default)
 
