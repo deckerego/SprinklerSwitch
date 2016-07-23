@@ -57,7 +57,7 @@
 		</div>
 
 		<script src="installed/jquery/dist/jquery.min.js"></script>
-		<script type="text/javascript" src="installed/Chart.js/dist/Chart.min.js"></script>
+		<script type="text/javascript" src="installed/Chart.js/Chart.min.js"></script>
 		<script src="installed/bootstrap/dist/js/bootstrap.min.js"></script>
 		<script type="text/javascript" src="js/events.js"></script>
 		<script type="text/javascript" src="js/graphs.js"></script>
