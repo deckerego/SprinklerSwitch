@@ -47,6 +47,7 @@ def is_enabled(button):
 
 	pin = button_pin[button]
 
+	wiringpi.pinMode(pin, 1)
 	state = wiringpi.digitalRead(pin)
 
 	return state == 1
