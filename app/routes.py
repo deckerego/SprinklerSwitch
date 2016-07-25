@@ -26,7 +26,7 @@ instance_name = configuration.get('instance_name')
 temperature = Temperature()
 gpio = GPIO()
 forecast = Forecast()
-jabber_service = Jabber(configuration.get('xmpp_username'), configuration.get('xmpp_password'), temperature)
+jabber_service = Jabber(configuration.get('xmpp_username'), configuration.get('xmpp_password'), temperature, gpio)
 
 application = Bottle()
 application.install(temperature)
@@ -145,4 +145,4 @@ def set_switch_status(button, gpio):
 	else:
 		gpio.disable(button)
 		logging.info("Switch %d OFF" % button)
-	return get_switch_status(button)
+	return get_switch_status(button, gpio)

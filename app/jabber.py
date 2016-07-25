@@ -3,7 +3,6 @@ import inspect
 import logging
 import datetime
 import os, time
-import gpio
 from config import configuration
 
 logger = logging.getLogger('sprinkler')
@@ -13,10 +12,11 @@ class Jabber(sleekxmpp.ClientXMPP):
   name = 'jabber_xmpp'
   keyword = 'jabber'
 
-  def __init__(self, jid, password, temperature):
+  def __init__(self, jid, password, temperature, gpio):
     super(Jabber, self).__init__(jid, password)
 
     self.temperature = temperature
+    self.gpio = gpio
     self.instance_name = configuration.get('instance_name').lower()
     self.silent = False
     self.sprinkler_button = 0
@@ -98,7 +98,7 @@ class Jabber(sleekxmpp.ClientXMPP):
       if not from_account in configuration.get('xmpp_recipients'):
         logger.warn("Received message from non-whitelist user %s: %s" % (from_account, message['body']))
       elif "%s status" % self.instance_name in message['body'].lower():
-        message.reply("Sprinkler is %s" % ("enabled" if gpio.is_enabled(self.sprinkler_button) else "disabled")).send()
+        message.reply("Sprinkler is %s" % ("enabled" if self.gpio.is_enabled(self.sprinkler_button) else "disabled")).send()
       elif "%s climate" % self.instance_name in message['body'].lower():
         humidity, celsius, status = self.temperature.get_conditions()
         farenheit = ((celsius * 9) / 5) + 32
