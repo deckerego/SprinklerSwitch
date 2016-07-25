@@ -11,10 +11,10 @@ logger = logging.getLogger('sprinkerswitch')
 os.chdir(os.path.dirname(__file__))
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), ".")))
 
-import gpio
 import json
 import time
 import datetime
+from piwiring import GPIO
 from HIH6130 import Temperature
 from noaa import Forecast
 from jabber import Jabber
@@ -24,11 +24,13 @@ from bottle import Bottle, HTTPResponse, static_file, get, put, request, respons
 instance_name = configuration.get('instance_name')
 
 temperature = Temperature()
+gpio = GPIO()
 forecast = Forecast()
-jabber_service = Jabber(configuration.get('xmpp_username'), configuration.get('xmpp_password'), temperature)
+jabber_service = Jabber(configuration.get('xmpp_username'), configuration.get('xmpp_password'), temperature, gpio)
 
 application = Bottle()
 application.install(temperature)
+application.install(gpio)
 application.install(forecast)
 #FIXME Right now two clients (like garagesec and sprinkler) can't co-exist
 #application.install(jabber_service)
@@ -132,15 +134,15 @@ def update_forecast(forecast):
 	return '{ "lastUpdated": "%s" }' % forecast.last_updated()
 
 @application.get('/switch/<button:int>')
-def get_switch_status(button):
+def get_switch_status(button, gpio):
 	return '{ "enabled": %s }' % ("true" if gpio.is_enabled(button) else "false")
 
 @application.put('/switch/<button:int>')
-def set_switch_status(button):
+def set_switch_status(button, gpio):
 	if request.json['enabled']:
 		gpio.enable(button)
 		logging.info("Switch %d ON" % button)
 	else:
 		gpio.disable(button)
 		logging.info("Switch %d OFF" % button)
-	return get_switch_status(button)
+	return get_switch_status(button, gpio)
