@@ -11,6 +11,7 @@
 
 DESC="Sets water sensor state for irrigation system"
 NAME='sprinkler'
+DAEMON="/bin/node"
 PIDFILE=/var/run/$NAME.pid
 SCRIPTNAME=/etc/init.d/$NAME
 APPDIR=/opt/sprinkler
@@ -20,7 +21,6 @@ GPIO_ARGS="set 23"
 
 # Read configuration variable file if it is present
 [ -r /etc/default/$NAME ] && . /etc/default/$NAME
-DAEMON="$NODE_HOME/bin/node"
 DAEMON_ARGS="$APPDIR/sprinkler.js $LATITUDE $LONGITUDE"
 
 # Exit if the package is not installed

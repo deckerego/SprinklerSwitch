@@ -1,3 +1,3 @@
 [ -r /etc/default/$NAME ] && . /etc/default/$NAME
 
-0 23/2 * * * pi $NODE_HOME/bin/node /opt/sprinkler/sprinkler.js "$LATITUDE" "$LONGITUDE" 2>&1 | /usr/bin/logger -t SPRINKLER
+0 23/2 * * * pi /bin/node /opt/sprinkler/sprinkler.js "$LATITUDE" "$LONGITUDE" 2>&1 | /usr/bin/logger -t SPRINKLER

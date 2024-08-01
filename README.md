@@ -9,6 +9,7 @@ or a MOSFET so you can switch on or off your irrigation system.
 ## Installing
 
 1. Build a relay or MOSFET switch
+1. Install `apt-get install nodejs`
 1. Run installer script
 1. Update /etc/default/sprinkler
 1. Start service
