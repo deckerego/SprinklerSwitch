@@ -9,9 +9,6 @@ or a MOSFET so you can switch on or off your irrigation system.
 ## Installing
 
 1. Build a relay or MOSFET switch
-1. NVM installation
-1. Node 18+ installation
-1. Copy tarball
-1. Expand tarball
+1. Run installer script
 1. Update /etc/default/sprinkler
-1. Initialize service
+1. Start service
