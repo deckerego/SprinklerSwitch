@@ -3,19 +3,20 @@
 const Gpio = require('onoff').Gpio;
 const noaa_gfs = require("noaa-gfs-js");
 const GPIO_23 = 535;
-const DEBUG = true;
+const DEBUG = false;
 const PRECIP_RATE_THRESHOLD = 0.001;
 
 async function forecast(lat, lon) {
   const surfacePrecipRate = await getMetric(lat, lon, 'pratesfc');
   console.info(`Aggregated ${surfacePrecipRate.length} pratesfc values`);
+  if(DEBUG) console.debug(JSON.stringify(surfacePrecipRate, null, 2));
 
   const now = new Date();
   const priorAccumulation = surfacePrecipRate.reduce((acc, result) => result.time <= now ? acc + result.value : acc, 0);
   const forecastAccumulation = surfacePrecipRate.reduce((acc, result) => result.time > now ? acc + result.value : acc, 0);
-  console.debug(`Prior pratesfc: ${priorAccumulation}; Forecast pratesfc: ${forecastAccumulation}`);
+  console.info(`Surface precipitation rate yesterday: ${priorAccumulation} kg/m^2/s; tomorrow: ${forecastAccumulation} kg/m^2/s`);
 
-  if(priorAccumulation + forecastAccumulation > PRECIP_RATE_THRESHOLD) disable();
+  if((priorAccumulation + forecastAccumulation) > PRECIP_RATE_THRESHOLD) disable();
   else enable();
 }
 
@@ -26,7 +27,6 @@ async function getMetric(lat, long, metric) {
 
   const aggregate = results.array_format.reduce((acc, result) => {
     const resultTime = new Date(result.time);
-    resultTime.setDate(resultTime.getDate() + 1); // Fix defect in date calculation
     if(acc.has(result.time)) {
       const avgResult = acc.get(result.time);
       acc.set(result.time, {
@@ -77,5 +77,12 @@ function setGPIO(deviceNumber, isHigh) {
 }
 
 (async () => {
-  await forecast(40.125, -86.333);
+  const latitude = parseFloat(process.argv[2]);
+  const longitude = parseFloat(process.argv[3]);
+  if(! longitude) {
+    console.error("sprinkler.js LATITUDE LONGITUDE");
+    return;
+  }
+
+  await forecast(latitude, longitude);
 })();
