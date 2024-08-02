@@ -1,6 +1,0 @@
-bottle>=0.12.0
-nose>=1.1.2
-flexmock==0.9.7
-sleekxmpp>=1.0
-wiringpi>=1.0.5
-boto>=2.25.0

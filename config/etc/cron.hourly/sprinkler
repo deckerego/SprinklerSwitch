@@ -1,3 +1,0 @@
-#!/bin/sh
-
-/usr/bin/curl -u "pi:password" -H "Content-Type: application/json" -XPUT http://localhost/sprinkler/forecast/update

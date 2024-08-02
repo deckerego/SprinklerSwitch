@@ -1,5 +1,0 @@
-check process sprinkler with pidfile /var/run/sprinkler.pid
-	start "/usr/sbin/service sprinkler restart"
-	stop "/usr/sbin/service sprinkler stop"
-	if failed host localhost port 9004
-	then restart

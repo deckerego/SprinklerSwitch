@@ -1,0 +1,9 @@
+{
+  "name": "sprinkler-switch",
+  "version": "0.1.0",
+  "license": "MPL-2.0",
+  "dependencies": {
+    "noaa-gfs-js": "^1.0.3",
+    "onoff": "^6.0.3"
+  }
+}
