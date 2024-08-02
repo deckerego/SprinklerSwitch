@@ -1,0 +1,13 @@
+Source: sprinklerswitch
+Maintainer: DeckerEgo <john@deckerego.net>
+Section: electronics
+Priority: optional
+Build-Depends: nodejs (>= 18.0.0), debhelper (>= 13.11.0)
+Standards-Version: 4.7.0
+
+
+
+Package: sprinklerswitch
+Architecture: arm64
+Depends: ${misc:Depends}, nodejs
+Description: A service to manage your home lawn irrigation controller and intelligently enable or disable your sprinkler system
