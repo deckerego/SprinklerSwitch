@@ -1,9 +1,0 @@
-#!/bin/bash
-
-# Fix ownership in home directory after installing
-chown -R pi:pi /opt/sprinkler
-
-# Boot upon start
-update-rc.d sprinkler defaults
-
-echo "Please reboot your Raspberry Pi!"
