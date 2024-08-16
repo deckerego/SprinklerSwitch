@@ -1,3 +1,0 @@
-[ -r /etc/default/$NAME ] && . /etc/default/$NAME
-
-0 */12 * * * pi /bin/node /opt/sprinkler/sprinkler.js "$LATITUDE" "$LONGITUDE" 2>&1 | /usr/bin/logger -t SPRINKLER
