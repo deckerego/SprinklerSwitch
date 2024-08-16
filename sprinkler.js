@@ -6,7 +6,7 @@ const fs = require('node:fs');
 const haversine = require('haversine-distance');
 
 const GPIO_PIN = process.env.GPIO_DEVICE_ID || 535;
-const DEBUG = process.env.DEBUG || true;
+const DEBUG = process.env.DEBUG ? process.env.DEBUG === 'true' : true;
 const PRECIP_RATE_THRESHOLD = process.env.PRECIP_RATE_THRESHOLD || 0.001;
 
 async function forecast(lat, lon) {
@@ -99,6 +99,8 @@ function readConfig(path) {
 }
 
 (async () => {
+  console.info("Debug is:", process.env.DEBUG);
+
   const configFile = process.argv[2] || "etc/sprinklerswitch/config.json";
   if(! configFile) {
     console.error("sprinkler.js [CONFIGFILE]");

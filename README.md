@@ -12,4 +12,4 @@ or a MOSFET so you can switch on or off your irrigation system.
 1. Install `apt-get install nodejs`
 1. `tar xvzf sprinklerswitch.tar.gz`
 1. `cd SprinklerSwitch`
-1. `./install.sh`
+1. `sudo ./install.sh`
