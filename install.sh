@@ -8,5 +8,7 @@ update-rc.d sprinkler defaults
 mkdir -p /opt/sprinkler
 cp package-lock.json package.json sprinkler.js /opt/sprinkler
 chown -R pi:pi /opt/sprinkler
+cd /opt/sprinkler
+npm ci
 
 service sprinkler start
