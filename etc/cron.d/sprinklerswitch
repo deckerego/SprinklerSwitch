@@ -1,0 +1,3 @@
+[ -r /etc/default/sprinklerswitch ] && . /etc/default/sprinklerswitch
+
+0 */12 * * * pi /bin/node /opt/sprinklerswitch/sprinkler.js "$LATITUDE" "$LONGITUDE" 2>&1 | /usr/bin/logger -t SPRINKLERSWITCH

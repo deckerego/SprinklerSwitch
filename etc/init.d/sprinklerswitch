@@ -1,6 +1,6 @@
 #! /bin/bash
 ### BEGIN INIT INFO
-# Provides:          sprinkler
+# Provides:          sprinklerswitch
 # Required-Start:    $remote_fs $syslog
 # Required-Stop:     $remote_fs $syslog
 # Default-Start:     2 3 4 5
@@ -10,18 +10,19 @@
 ### END INIT INFO
 
 DESC="Sets water sensor state for irrigation system"
-NAME='sprinkler'
+NAME='sprinklerswitch'
 DAEMON="/bin/node"
 PIDFILE=/var/run/$NAME.pid
 SCRIPTNAME=/etc/init.d/$NAME
-APPDIR=/opt/sprinkler
+APPDIR=/opt/sprinklerswitch
+CONFIGFILE=/etc/sprinklerswitch/config.json
 
 GPIO_BIN='/usr/bin/raspi-gpio'
 GPIO_ARGS="set 23"
 
 # Read configuration variable file if it is present
 [ -r /etc/default/$NAME ] && . /etc/default/$NAME
-DAEMON_ARGS="$APPDIR/sprinkler.js $LATITUDE $LONGITUDE"
+DAEMON_ARGS="$APPDIR/sprinkler.js $CONFIGFILE"
 
 # Exit if the package is not installed
 [ -x "$DAEMON" ] || exit 0
@@ -44,7 +45,7 @@ do_start()
   $GPIO_BIN $GPIO_ARGS dl
   $GPIO_BIN $GPIO_ARGS dh
 
-  $DAEMON $DAEMON_ARGS 2>&1 | /usr/bin/logger -t SPRINKLER
+  DEBUG=$DEBUG $DAEMON $DAEMON_ARGS 2>&1 | /usr/bin/logger -t SPRINKLERSWITCH
 }
 
 #
