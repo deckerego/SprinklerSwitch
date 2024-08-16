@@ -8,8 +8,11 @@ or a MOSFET so you can switch on or off your irrigation system.
 
 ## Installing
 
-1. Build a relay or MOSFET switch
+Installing the sprinkler switch requires some hardware installation and installing the SprinklerSwitch scripts:
+
+1. Build a relay or MOSFET switch (see the [Hackaday Project Page](https://hackaday.io/project/7566-sprinkler-switch) for details)
 1. Install `apt-get install nodejs`
-1. `tar xvzf sprinklerswitch.tar.gz`
-1. `cd SprinklerSwitch`
-1. `sudo ./install.sh`
+1. Get the latest version of SprinklerSwitch with `wget https://github.com/deckerego/SprinklerSwitch/archive/refs/heads/main.zip`
+1. Unzip the latest release `unzip main.zip`
+1. Switch to the unzipped directory  `cd  SprinklerSwitch-main`
+1. Run the installer script `sudo ./install.sh`

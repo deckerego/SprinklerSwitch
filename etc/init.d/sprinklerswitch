@@ -45,7 +45,7 @@ do_start()
   $GPIO_BIN $GPIO_ARGS dl
   $GPIO_BIN $GPIO_ARGS dh
 
-  $DAEMON $DAEMON_ARGS 2>&1 | /usr/bin/logger -t SPRINKLERSWITCH
+  DEBUG=$DEBUG $DAEMON $DAEMON_ARGS 2>&1 | /usr/bin/logger -t SPRINKLERSWITCH
 }
 
 #

@@ -7,26 +7,24 @@ const haversine = require('haversine-distance');
 
 const GPIO_PIN = process.env.GPIO_DEVICE_ID || 535;
 const DEBUG = process.env.DEBUG ? process.env.DEBUG === 'true' : true;
-const PRECIP_RATE_THRESHOLD = process.env.PRECIP_RATE_THRESHOLD || 0.001;
 
-async function forecast(lat, lon) {
+async function needsWater(lat, lon, rainThreshold) {
   const surfacePrecipRate = await getAggregateMetric(lat, lon, 'pratesfc');
   const now = new Date();
   const priorAccumulation = surfacePrecipRate.reduce((acc, result) => result.time <= now ? acc + result.value : acc, 0);
   const forecastAccumulation = surfacePrecipRate.reduce((acc, result) => result.time > now ? acc + result.value : acc, 0);
   console.info(`Surface precipitation (kg/m^2/s): ${priorAccumulation} + ${forecastAccumulation} = ${priorAccumulation + forecastAccumulation}`);
 
-  if((priorAccumulation + forecastAccumulation) > PRECIP_RATE_THRESHOLD) disable();
-  else enable();
+  return (priorAccumulation + forecastAccumulation) <= rainThreshold;
 }
 
 async function getAggregateMetric(lat, lon, metric) {
   const metrics = await getMetric(lat, lon, metric);
-  console.info(`Fetched ${metrics.array_format.length} ${metric} results from NOAA`);
+  console.debug(`Fetched ${metrics.array_format.length} ${metric} results from NOAA`);
   if(DEBUG) console.debug(metrics.array_format.map(result => `${new Date(result.time).toISOString()},${result.lat},${result.lon},${metric},${result.value}`));
 
   const aggregateMetrics = aggregate(lat, lon, metrics);
-  console.info(`Aggregated ${aggregateMetrics.length} ${metric} values`);
+  console.debug(`Aggregated ${aggregateMetrics.length} ${metric} values`);
   if(DEBUG) console.debug(aggregateMetrics.map(result => `${new Date(result.time).toISOString()},${metric},${result.value}`));
 
   return aggregateMetrics;
@@ -77,18 +75,9 @@ function getYesterday() {
   };
 }
 
-function enable() {
-  setGPIO(GPIO_PIN, true);
-  console.info("Enabling sprinkler");
-}
-
-function disable() {
-  setGPIO(GPIO_PIN, false);
-  console.info("Disabling sprinkler");
-}
-
 function setGPIO(deviceNumber, isHigh) {
   if(DEBUG) return;
+  console.info(`${isHigh ? "Enabling" : "Disabling"} sprinkler on GPIO ${deviceNumber}`);
   const pin = new Gpio(deviceNumber, 'out');
   pin.writeSync(isHigh ? 1 : 0);
 }
@@ -99,8 +88,6 @@ function readConfig(path) {
 }
 
 (async () => {
-  console.info("Debug is:", process.env.DEBUG);
-
   const configFile = process.argv[2] || "etc/sprinklerswitch/config.json";
   if(! configFile) {
     console.error("sprinkler.js [CONFIGFILE]");
@@ -108,5 +95,8 @@ function readConfig(path) {
   }
 
   const config = readConfig(configFile);
-  await forecast(config.latitude, config.longitude);
+  const rainThreshold = config.precipitationRateThreshold || 0.001;
+  const deviceNumber = config.gpioDeviceId || 535;
+  const sprinkler = await needsWater(config.latitude, config.longitude, rainThreshold);
+  setGPIO(deviceNumber, sprinkler ? true : false);
 })();
