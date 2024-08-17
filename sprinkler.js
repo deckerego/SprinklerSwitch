@@ -6,9 +6,9 @@ const fs = require('node:fs');
 const haversine = require('haversine-distance');
 
 const GPIO_PIN = process.env.GPIO_DEVICE_ID || 535;
-const DEBUG = process.env.DEBUG ? process.env.DEBUG === 'true' : true;
+const DEBUG = process.env.DEBUG ? process.env.DEBUG === 'true' : false;
 
-async function needsWater(lat, lon, rainThreshold) {
+async function hasRain(lat, lon, rainThreshold) {
   const surfacePrecipRate = await getAggregateMetric(lat, lon, 'pratesfc');
   const now = new Date();
   const priorAccumulation = surfacePrecipRate.reduce((acc, result) => result.time <= now ? acc + result.value : acc, 0);
@@ -97,6 +97,6 @@ function readConfig(path) {
   const config = readConfig(configFile);
   const rainThreshold = config.precipitationRateThreshold || 0.001;
   const deviceNumber = config.gpioDeviceId || 535;
-  const sprinkler = await needsWater(config.latitude, config.longitude, rainThreshold);
+  const sprinkler = await hasRain(config.latitude, config.longitude, rainThreshold);
   setGPIO(deviceNumber, sprinkler ? true : false);
 })();
