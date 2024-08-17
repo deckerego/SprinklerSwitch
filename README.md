@@ -16,3 +16,10 @@ Installing the sprinkler switch requires some hardware installation and installi
 1. Unzip the latest release `unzip main.zip`
 1. Switch to the unzipped directory  `cd  SprinklerSwitch-main`
 1. Run the installer script `sudo ./install.sh`
+
+## Testing Locally
+
+You can test locally by setting the environment variable `DEBUG=true`, as in:
+```
+node DEBUG=true ./sprinkler.js
+```

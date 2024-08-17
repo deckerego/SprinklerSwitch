@@ -43,9 +43,9 @@ do_start()
   # Reset GPIO pin
   $GPIO_BIN $GPIO_ARGS op
   $GPIO_BIN $GPIO_ARGS dl
-  $GPIO_BIN $GPIO_ARGS dh
+  [ $DEFAULT_PIN_HIGH -eq "true" ] && $GPIO_BIN $GPIO_ARGS dh
 
-  DEBUG=$DEBUG $DAEMON $DAEMON_ARGS 2>&1 | /usr/bin/logger -t SPRINKLERSWITCH
+  $DAEMON $DAEMON_ARGS 2>&1 | /usr/bin/logger -t SPRINKLERSWITCH
 }
 
 #
@@ -56,7 +56,7 @@ do_stop()
   # Reset GPIO pin
   $GPIO_BIN $GPIO_ARGS op
   $GPIO_BIN $GPIO_ARGS dl
-  $GPIO_BIN $GPIO_ARGS dh
+  [ $DEFAULT_PIN_HIGH -eq "true" ] && $GPIO_BIN $GPIO_ARGS dh
 }
 
 #
