@@ -1,16 +1,17 @@
 const fs = require('node:fs');
 
 class ConfigRepository {
-    configFile = process.argv[2] || "etc/sprinklerswitch/config.json";
-    
-    read() {
-        if(! configFile) {
-            console.error("sprinkler.js [CONFIGFILE]");
-            return;
-        }
+    config = undefined;
+    configFile = process.argv[2] || "/etc/sprinklerswitch/config.json";
 
-        const data = fs.readFileSync(configFile, 'utf8');
-        return JSON.parse(data);
+    load() {
+        const data = fs.readFileSync(this.configFile, 'utf8');
+        this.config = JSON.parse(data);
+    }
+    
+    get(key, fallback) {
+        if(! this.config) this.load();
+        return this.config[key] || fallback;
     }
 }
 

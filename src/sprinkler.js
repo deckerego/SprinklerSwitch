@@ -1,8 +1,9 @@
 'use strict';
 
-const forecastService = require("service/forecast.js");
-const gpioPort = require("ports/gpio.js");
+const forecastService = require("./services/forecast.js");
+const gpioPort = require("./ports/gpio.js");
 
-(async () => 
-  forecastService.shouldIrrigate() ? gpioPort.setGPIO(true) :  gpioPort.setGPIO(false)
-)();
+(async () => {
+  const sprinklerEnable = await forecastService.shouldIrrigate();
+  sprinklerEnable ? gpioPort.setGPIO(true) : gpioPort.setGPIO(false);
+})();

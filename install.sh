@@ -8,7 +8,8 @@ cp -a etc/init.d/sprinklerswitch /etc/init.d
 update-rc.d sprinklerswitch defaults
 
 mkdir -p /opt/sprinklerswitch
-cp package-lock.json package.json sprinkler.js /opt/sprinklerswitch
+cp package-lock.json package.json /opt/sprinklerswitch
+cp -a src/* /opt/sprinklerswitch
 chown -R pi:pi /opt/sprinklerswitch
 cd /opt/sprinklerswitch
 npm ci
