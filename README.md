@@ -12,14 +12,21 @@ Installing the sprinkler switch requires some hardware installation and installi
 
 1. Build a relay or MOSFET switch (see the [Hackaday Project Page](https://hackaday.io/project/7566-sprinkler-switch) for details)
 1. Install `apt-get install nodejs`
-1. Get the latest version of SprinklerSwitch with `wget https://github.com/deckerego/SprinklerSwitch/archive/refs/heads/main.zip`
-1. Unzip the latest release `unzip main.zip`
-1. Switch to the unzipped directory  `cd  SprinklerSwitch-main`
-1. Run the installer script `sudo ./install.sh`
+1. Get the latest version of SprinklerSwitch with `wget https://github.com/deckerego/Macropad_4chord_MIDI/releases/latest/download/SprinklerSwitch.zip`
+1. Unzip the latest release into a new directory: `unzip SprinklerSwitch.zip -d SprinklerSwitch`
+1. Switch to the unzipped directory  `cd  SprinklerSwitch`
+1. Run the installer script: `sudo ./install.sh`
 
 ## Testing Locally
 
-You can test locally by setting the environment variable `DEBUG=true`, as in:
+Automated tests can be run with:
 ```
-node DEBUG=true ./sprinkler.js
+npm ci
+npm test
+```
+
+You can test locally without setting GPIO pins using:
+```
+npm ci
+npm run launch
 ```
