@@ -17,6 +17,14 @@ Installing the sprinkler switch requires some hardware installation and installi
 1. Switch to the unzipped directory  `cd  SprinklerSwitch`
 1. Run the installer script: `sudo ./install.sh`
 
+## Configuring
+
+Ensure you update `/etc/sprinklerswitch/config.json` to set your location using your latitude and longitude.
+
+By default SprinklerSwitch uses the GPIO 23 pin on the Raspberry Pi to open/close the sprinkler sensor switch.
+With the latest Raspian builds this maps to `gpio-535` but you can map this to any GPIO device you like by
+updating `config.json`. Run `cat /sys/kernel/debug/gpio` to get a list of all GPIO pins and their device IDs.
+
 ## Testing Locally
 
 Automated tests can be run with:
