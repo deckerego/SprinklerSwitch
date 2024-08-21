@@ -14,8 +14,8 @@ Installing the sprinkler switch requires some hardware installation and installi
 1. Install `apt-get install nodejs`
 1. Get the latest version of SprinklerSwitch with `wget https://github.com/deckerego/SprinklerSwitch/releases/latest/download/SprinklerSwitch.zip`
 1. Unzip the latest release into a new directory: `unzip SprinklerSwitch.zip -d SprinklerSwitch`
-1. Switch to the unzipped directory  `cd  SprinklerSwitch`
-1. Run the installer script: `sudo ./install.sh`
+1. Switch to the unzipped directory  `cd SprinklerSwitch`
+1. Run the installer script: `sudo sh ./install.sh`
 
 ## Configuring
 
