@@ -4,6 +4,7 @@ cp -a etc/cron.d/sprinklerswitch /etc/cron.d
 chown root:root /etc/cron.d/sprinklerswitch
 [ ! -f /etc/default/sprinklerswitch ] && cp -a etc/default/sprinklerswitch /etc/default
 cp -a etc/init.d/sprinklerswitch /etc/init.d
+chmod u+x /etc/init.d/sprinklerswitch
 [ ! -f /etc/sprinklerswitch/config.json ] && cp -a etc/sprinklerswitch /etc
 update-rc.d sprinklerswitch defaults
 
