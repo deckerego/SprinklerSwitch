@@ -19,7 +19,7 @@ describe("Obtain NOAA GFS data", () => {
 
       const results = await gfsRepository.getAggregateMetric(47.6205099, -122.3518523, 'my_metric');
       expect(results).toHaveLength(gfsRepository.sampleCount);
-      expect(results[10].value).toBe(0.00007464068029076087);
+      expect(results[10].value).toBe(0.000030000001);
   });
 })
 

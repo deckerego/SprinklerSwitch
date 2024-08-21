@@ -31,7 +31,7 @@ class GfsRepository {
         console.debug(`Fetched ${metrics.array_format.length} ${metric} results from NOAA`);
         if (DEBUG) console.debug(metrics.array_format.map(result => `${new Date(result.time).toISOString()},${result.lat},${result.lon},${metric},${result.value}`));
 
-        const aggregateMetrics = GfsRepository.aggregate(lat, lon, metrics);
+        const aggregateMetrics = GfsRepository.closest(lat, lon, metrics);
         console.debug(`Aggregated ${aggregateMetrics.length} ${metric} values`);
         if (DEBUG) console.debug(aggregateMetrics.map(result => `${new Date(result.time).toISOString()},${metric},${result.value}`));
 
@@ -56,25 +56,25 @@ class GfsRepository {
         };
     }
 
-    static aggregate(lat, lon, results) {
-        const maxDistance = haversine([results.lats[0], results.lons[0]], [results.lats[1], results.lons[1]]);
-
+    static closest(lat, lon, results) {
         const aggregate = results.array_format.reduce((acc, result) => {
             const resultTime = new Date(result.time);
-            const distance = haversine([lat, lon], [result.lat, result.lon]);
-            const magnitude = 1 - (distance / maxDistance);
-            const weightedValue = magnitude * result.value;
+            const resultDistance = haversine([lat, lon], [result.lat, result.lon]);
 
             if (acc.has(result.time)) {
                 const previousResult = acc.get(result.time);
-                acc.set(result.time, {
-                    time: resultTime,
-                    value: weightedValue + previousResult.value
-                });
+                if(previousResult.distance > resultDistance) {
+                    acc.set(result.time, {
+                        time: resultTime,
+                        distance: resultDistance,
+                        value: result.value
+                    });
+                }
             } else {
                 acc.set(result.time, {
                     time: resultTime,
-                    value: weightedValue
+                    distance: resultDistance,
+                    value: result.value
                 });
             }
             return acc;
