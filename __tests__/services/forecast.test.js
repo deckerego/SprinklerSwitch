@@ -17,7 +17,7 @@ describe("Determine irrigation need", () => {
     });
 
     gfsRepository.getPrecipitationRate.mockImplementation((lat, lon, metric) => {
-      return Promise.resolve(mockAnyData);
+      return Promise.resolve(mockPrecipitationData);
     });
 
     const result = await forecastService.shouldIrrigate();
@@ -36,7 +36,7 @@ describe("Determine irrigation need", () => {
     });
 
     gfsRepository.getPrecipitationRate.mockImplementation((lat, lon, metric) => {
-      return Promise.resolve(mockAnyData);
+      return Promise.resolve(mockPrecipitationData);
     });
 
     const result = await forecastService.shouldIrrigate();
@@ -44,7 +44,7 @@ describe("Determine irrigation need", () => {
   });
 })
 
-const mockAnyData = [
+const mockPrecipitationData = [
   {
     "time": new Date("2024-08-19T16:00:00.000Z"),
     "value": 0

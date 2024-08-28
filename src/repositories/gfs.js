@@ -1,6 +1,6 @@
 const noaa_gfs = require("noaa-gfs-js");
 const haversine = require('haversine-distance');
-const DEBUG = process.env.DEBUG ? process.env.DEBUG === 'true' : false;
+const TRACE = process.env.TRACE ? process.env.TRACE === 'true' : false;
 
 class GfsRepository {
     precision = '0p25';
@@ -29,11 +29,11 @@ class GfsRepository {
     async getAggregateMetric(lat, lon, metric) {
         const metrics = await this.getMetric(lat, lon, metric);
         console.debug(`Fetched ${metrics.array_format.length} ${metric} results from NOAA`);
-        if (DEBUG) console.debug(metrics.array_format.map(result => `${new Date(result.time).toISOString()},${result.lat},${result.lon},${metric},${result.value}`));
+        if(TRACE) console.trace(metrics.array_format.map(result => `${new Date(result.time).toISOString()},${result.lat},${result.lon},${metric},${result.value}`));
 
         const aggregateMetrics = GfsRepository.closest(lat, lon, metrics);
         console.debug(`Aggregated ${aggregateMetrics.length} ${metric} values`);
-        if (DEBUG) console.debug(aggregateMetrics.map(result => `${new Date(result.time).toISOString()},${metric},${result.value}`));
+        if(TRACE) console.trace(aggregateMetrics.map(result => `${new Date(result.time).toISOString()},${metric},${result.value}`));
 
         return aggregateMetrics;
     }
