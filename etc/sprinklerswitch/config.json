@@ -2,5 +2,6 @@
     "latitude": 47.6205099,
     "longitude": -122.3518523,
     "gpioDeviceId": 535,
-    "precipitationRateThreshold": 0.001
+    "precipitationRateThreshold": 0.001,
+    "precipitableWaterThreshold": 50.0
 }
