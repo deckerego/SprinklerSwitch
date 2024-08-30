@@ -1,6 +1,8 @@
 const noaa_gfs = require("noaa-gfs-js");
 const haversine = require('haversine-distance');
+const DEBUG = process.env.DEBUG ? process.env.DEBUG === 'true' : false;
 const TRACE = process.env.TRACE ? process.env.TRACE === 'true' : false;
+const consoleLog = console.log;
 
 class GfsRepository {
     precision = '0p25';
@@ -28,11 +30,11 @@ class GfsRepository {
 
     async getAggregateMetric(lat, lon, metric) {
         const metrics = await this.getMetric(lat, lon, metric);
-        console.debug(`Fetched ${metrics.array_format.length} ${metric} results from NOAA`);
+        if(DEBUG) console.debug(`Fetched ${metrics.array_format.length} ${metric} results from NOAA`);
         if(TRACE) console.trace(metrics.array_format.map(result => `${new Date(result.time).toISOString()},${result.lat},${result.lon},${metric},${result.value}`));
 
         const aggregateMetrics = GfsRepository.closest(lat, lon, metrics);
-        console.debug(`Aggregated ${aggregateMetrics.length} ${metric} values`);
+        if(DEBUG) console.debug(`Aggregated ${aggregateMetrics.length} ${metric} values`);
         if(TRACE) console.trace(aggregateMetrics.map(result => `${new Date(result.time).toISOString()},${metric},${result.value}`));
 
         return aggregateMetrics;
@@ -40,7 +42,10 @@ class GfsRepository {
 
     async getMetric(lat, lon, metric) {
         const yesterday = GfsRepository.getYesterday();
-        return await noaa_gfs.get_gfs_data(this.precision, yesterday.dateString, yesterday.hourString, [lat, lat], [lon, lon], this.sampleCount - 1, metric, true);
+        if(! TRACE) console.log = (message) => { /* Mute console logging from the NOAA GFS library */ };
+        const result = await noaa_gfs.get_gfs_data(this.precision, yesterday.dateString, yesterday.hourString, [lat, lat], [lon, lon], this.sampleCount - 1, metric, true);
+        console.log = consoleLog;
+        return result;
     }
 
     static getYesterday() {
@@ -66,6 +71,8 @@ class GfsRepository {
                 if(previousResult.distance > resultDistance) {
                     acc.set(result.time, {
                         time: resultTime,
+                        latitude: result.lat,
+                        longitude: result.lon,
                         distance: resultDistance,
                         value: result.value
                     });
@@ -73,6 +80,8 @@ class GfsRepository {
             } else {
                 acc.set(result.time, {
                     time: resultTime,
+                    latitude: result.lat,
+                    longitude: result.lon,
                     distance: resultDistance,
                     value: result.value
                 });
