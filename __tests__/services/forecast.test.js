@@ -16,7 +16,7 @@ describe("Precipitation rate", () => {
         case 'latitude': return 47.6205099;
         case 'longitude': return -122.3518523;
         case 'precipitationRateThreshold': return 0.0002;
-        case 'precipitableWaterThreshold': return 0.0;
+        case 'precipitableWaterThreshold': return 0.0; // Always considered
       };
     });
 
@@ -32,7 +32,7 @@ describe("Precipitation rate", () => {
         case 'latitude': return 47.6205099;
         case 'longitude': return -122.3518523;
         case 'precipitationRateThreshold': return 0.0003;
-        case 'precipitableWaterThreshold': return Number.MAX_SAFE_INTEGER;
+        case 'precipitableWaterThreshold': return Number.MAX_SAFE_INTEGER; // Never considered
       };
     });
 
@@ -49,8 +49,8 @@ describe("Precipitable water", () => {
       switch (key) {
         case 'latitude': return 47.6205099;
         case 'longitude': return -122.3518523;
-        case 'precipitationRateThreshold': return 0.0;
-        case 'precipitableWaterThreshold': return 50.0;
+        case 'precipitationRateThreshold': return 0.0; // Always considered
+        case 'precipitableWaterThreshold': return 45.0;
       };
     });
 
@@ -65,7 +65,7 @@ describe("Precipitable water", () => {
       switch (key) {
         case 'latitude': return 47.6205099;
         case 'longitude': return -122.3518523;
-        case 'precipitationRateThreshold': return Number.MAX_SAFE_INTEGER;
+        case 'precipitationRateThreshold': return Number.MAX_SAFE_INTEGER; // Never considered
         case 'precipitableWaterThreshold': return 46.0;
       };
     });

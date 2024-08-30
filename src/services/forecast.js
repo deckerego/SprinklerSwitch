@@ -35,8 +35,10 @@ class ForecastService {
 
         const precipitationRateThreshold = configRepository.get("precipitationRateThreshold", 0.001);
         const precipitableWaterThreshold = configRepository.get("precipitableWaterThreshold", 50.0);
-        return (totalAccumulation <= precipitationRateThreshold)
-            && (maxPrecipitable < precipitableWaterThreshold);
+        return !(
+            (totalAccumulation > precipitationRateThreshold) &&
+            (maxPrecipitable > precipitableWaterThreshold)
+        );
     }
 }
 
