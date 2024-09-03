@@ -18,7 +18,7 @@ describe("Get forecast metrics", () => {
     jest.useFakeTimers().setSystemTime(new Date('2024-08-20T13:30:00.000Z'));
     const result = await metricsService.fetch();
     expect(result.priorAccumulation).toBe(0.0);
-    expect(result.forecastAccumulation).toBe(0.00024994506544434645);
+    expect(result.forecastAccumulation).toBe(2.6994067067989413);
   });
 
   test("Precipitable water", async () => {

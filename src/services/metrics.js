@@ -9,9 +9,9 @@ class MetricsService {
 
         //TODO Convert to kg/m^2
         const precipitationRate = await gfsRepository.getPrecipitationRate(latitude, longitude) || [];
-        const priorAccumulation = precipitationRate.reduce((acc, result) => result.time <= now ? acc + result.value : acc, 0);
-        const forecastAccumulation = precipitationRate.reduce((acc, result) => result.time > now ? acc + result.value : acc, 0);
-        if(precipitationRate[0]) console.info(`Total surface precipitation (kg/m^2/s) @[${precipitationRate[0].latitude}, ${precipitationRate[0].longitude}]: ${priorAccumulation} => ${forecastAccumulation}`);
+        const priorAccumulation = precipitationRate.reduce((acc, result) => result.time <= now ? acc + (result.value * gfsRepository.secondsPerInterval) : acc, 0);
+        const forecastAccumulation = precipitationRate.reduce((acc, result) => result.time > now ? acc + (result.value * gfsRepository.secondsPerInterval) : acc, 0);
+        if(precipitationRate[0]) console.info(`Total surface precipitation (kg/m^2) @[${precipitationRate[0].latitude}, ${precipitationRate[0].longitude}]: ${priorAccumulation} => ${forecastAccumulation}`);
 
         const precipitableWater = await gfsRepository.getPrecipitableWater(latitude, longitude) || [];
         const maxPrecipitable = precipitableWater.reduce((acc, result) => result.time > now && result.value > acc ? result.value : acc, 0);

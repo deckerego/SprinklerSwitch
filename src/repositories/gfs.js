@@ -7,6 +7,7 @@ const consoleLog = console.log;
 class GfsRepository {
     precision = '0p25';
     sampleCount = 16;
+    secondsPerInterval = 60 * 60 * 3; //Assume each GIS interval is three hours
 
     async getPrecipitationRate(lat, lon) {
         return await this.getAggregateMetric(lat, lon, 'pratesfc');
