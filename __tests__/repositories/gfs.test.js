@@ -21,7 +21,7 @@ describe("Obtain NOAA GFS data", () => {
       expect(results).toHaveLength(gfsRepository.sampleCount);
       expect(results[10].value).toBe(0.000030000001);
   });
-})
+});
 
 const mockAnyData = {
     "array_format": [

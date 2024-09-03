@@ -35,7 +35,7 @@ describe("Retrieve configuration settings", () => {
     const value = configRepository.get("latitude", 1.0);
     expect(value).toBe(1.0);
   });
-})
+});
 
 describe("Failure states", () => {
   beforeEach(() => {
@@ -52,11 +52,11 @@ describe("Failure states", () => {
     fs.readFileSync.mockImplementation((path, encoding) => '{}');
     expect(() => configRepository.get(0.0, 1.0)).toThrow(TypeError);
   });
-})
+});
 
 const mockConfig = '{ \
   "latitude": 47.6205099, \
   "longitude": -122.3518523, \
   "gpioDeviceId": 535, \
   "precipitationRateThreshold": 0.001 \
-}'
+}';

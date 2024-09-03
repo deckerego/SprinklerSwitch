@@ -1,4 +1,4 @@
-const forecastService = require("../../src/services/forecast.js");
+const metricsService = require("../../src/services/metrics.js");
 const gfsRepository = require("../../src/repositories/gfs.js");
 jest.mock("../../src/repositories/gfs.js");
 const configRepository = require("../../src/repositories/config.js");
@@ -6,74 +6,27 @@ jest.mock("../../src/repositories/config.js");
 
 gfsRepository.getPrecipitationRate.mockImplementation((lat, lon, metric) =>  Promise.resolve(mockPrecipitationRateData));
 gfsRepository.getPrecipitableWater.mockImplementation((lat, lon, metric) =>  Promise.resolve(mockPrecipitableWaterData));
+configRepository.get.mockImplementation((key) => {
+  switch (key) {
+    case 'latitude': return 47.6205099;
+    case 'longitude': return -122.3518523;
+  };
+});
 
-describe("Precipitation rate", () => {
-  test("Too much rain", async () => {
+describe("Get forecast metrics", () => {
+  test("Precipitation rate", async () => {
     jest.useFakeTimers().setSystemTime(new Date('2024-08-20T13:30:00.000Z'));
-
-    configRepository.get.mockImplementation((key) => {
-      switch (key) {
-        case 'latitude': return 47.6205099;
-        case 'longitude': return -122.3518523;
-        case 'precipitationRateThreshold': return 0.0002;
-        case 'precipitableWaterThreshold': return 0.0; // Always considered
-      };
-    });
-
-    const result = await forecastService.shouldIrrigate();
-    expect(result).toBe(false);
+    const result = await metricsService.fetch();
+    expect(result.priorAccumulation).toBe(0.0);
+    expect(result.forecastAccumulation).toBe(0.00024994506544434645);
   });
 
-  test("Too little rain", async () => {
+  test("Precipitable water", async () => {
     jest.useFakeTimers().setSystemTime(new Date('2024-08-20T13:30:00.000Z'));
-
-    configRepository.get.mockImplementation((key) => {
-      switch (key) {
-        case 'latitude': return 47.6205099;
-        case 'longitude': return -122.3518523;
-        case 'precipitationRateThreshold': return 0.0003;
-        case 'precipitableWaterThreshold': return Number.MAX_SAFE_INTEGER; // Never considered
-      };
-    });
-
-    const result = await forecastService.shouldIrrigate();
-    expect(result).toBe(true);
+    const result = await metricsService.fetch();
+    expect(result.maxPrecipitable).toBe(45.5);
   });
-})
-
-describe("Precipitable water", () => {
-  test("Heavy clouds", async () => {
-    jest.useFakeTimers().setSystemTime(new Date('2024-08-20T13:30:00.000Z'));
-
-    configRepository.get.mockImplementation((key) => {
-      switch (key) {
-        case 'latitude': return 47.6205099;
-        case 'longitude': return -122.3518523;
-        case 'precipitationRateThreshold': return 0.0; // Always considered
-        case 'precipitableWaterThreshold': return 45.0;
-      };
-    });
-
-    const result = await forecastService.shouldIrrigate();
-    expect(result).toBe(false);
-  });
-
-  test("No clouds", async () => {
-    jest.useFakeTimers().setSystemTime(new Date('2024-08-20T13:30:00.000Z'));
-
-    configRepository.get.mockImplementation((key) => {
-      switch (key) {
-        case 'latitude': return 47.6205099;
-        case 'longitude': return -122.3518523;
-        case 'precipitationRateThreshold': return Number.MAX_SAFE_INTEGER; // Never considered
-        case 'precipitableWaterThreshold': return 46.0;
-      };
-    });
-
-    const result = await forecastService.shouldIrrigate();
-    expect(result).toBe(true);
-  });
-})
+});
 
 const mockPrecipitationRateData = [
   {
