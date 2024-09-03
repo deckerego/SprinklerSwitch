@@ -7,7 +7,6 @@ const consoleLog = console.log;
 class GfsRepository {
     precision = '0p25';
     sampleCount = 16;
-    secondsPerInterval = 60 * 60 * 3; //Assume each GIS interval is three hours
 
     async getPrecipitationRate(lat, lon) {
         return await this.getAggregateMetric(lat, lon, 'pratesfc');
@@ -36,7 +35,7 @@ class GfsRepository {
 
         const aggregateMetrics = GfsRepository.closest(lat, lon, metrics);
         if(DEBUG) console.debug(`Aggregated ${aggregateMetrics.length} ${metric} values`);
-        if(TRACE) console.trace(aggregateMetrics.map(result => `${new Date(result.time).toISOString()},${metric},${result.value}`));
+        if(TRACE) console.trace(aggregateMetrics.map(result => `${new Date(result.time).toISOString()},${metric},${result.duration},${result.value}`));
 
         return aggregateMetrics;
     }
@@ -44,7 +43,7 @@ class GfsRepository {
     async getMetric(lat, lon, metric) {
         const yesterday = GfsRepository.getYesterday();
         if(! TRACE) console.log = (message) => { /* Mute console logging from the NOAA GFS library */ };
-        const result = await noaa_gfs.get_gfs_data(this.precision, yesterday.dateString, yesterday.hourString, [lat, lat], [lon, lon], this.sampleCount - 1, metric, true);
+        const result = await noaa_gfs.get_gfs_data(this.precision, yesterday.dateString, yesterday.hourString, [lat, lat], [lon, lon], this.sampleCount, metric, true);
         console.log = consoleLog;
         return result;
     }
@@ -62,8 +61,8 @@ class GfsRepository {
         };
     }
 
-    static closest(lat, lon, results) {
-        const aggregate = results.array_format.reduce((acc, result) => {
+    static closest(lat, lon, metrics) {
+        const aggregate = metrics.array_format.reduce((acc, result) => {
             const resultTime = new Date(result.time);
             const resultDistance = haversine([lat, lon], [result.lat, result.lon]);
 
@@ -90,7 +89,13 @@ class GfsRepository {
             return acc;
         }, new Map());
 
-        return Array.from(aggregate.values());
+        const enriched = Array.from(aggregate.values()).map((result, i, results) => {
+            const resultDuration = i < results.length - 1 ? (new Date(results[i+1].time) - result.time) / 1000 : undefined;
+            return { ...result, duration: resultDuration }; 
+        });
+
+        // Don't return the last element, it was just there for duration calcuations.
+        return enriched.slice(0, -1); 
     }
 }
 

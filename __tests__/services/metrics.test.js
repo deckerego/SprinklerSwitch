@@ -33,96 +33,112 @@ const mockPrecipitationRateData = [
     "time": new Date("2024-08-19T16:00:00.000Z"),
     "latitude": 47.75,
     "longitude": -122.25,
+    "duration": 10800,
     "value": 0
   },
   {
     "time": new Date("2024-08-19T19:00:00.000Z"),
     "latitude": 47.75,
     "longitude": -122.25,
+    "duration": 10800,
     "value": 0
   },
   {
     "time": new Date("2024-08-19T22:00:00.000Z"),
     "latitude": 47.75,
     "longitude": -122.25,
+    "duration": 10800,
     "value": 0
   },
   {
     "time": new Date("2024-08-20T01:00:00.000Z"),
     "latitude": 47.75,
     "longitude": -122.25,
+    "duration": 10800,
     "value": 0
   },
   {
     "time": new Date("2024-08-20T04:00:00.000Z"),
     "latitude": 47.75,
     "longitude": -122.25,
+    "duration": 10800,
     "value": 0
   },
   {
     "time": new Date("2024-08-20T07:00:00.000Z"),
     "latitude": 47.75,
     "longitude": -122.25,
+    "duration": 10800,
     "value": 0
   },
   {
     "time": new Date("2024-08-20T10:00:00.000Z"),
     "latitude": 47.75,
     "longitude": -122.25,
+    "duration": 10800,
     "value": 0
   },
   {
     "time": new Date("2024-08-20T13:00:00.000Z"),
     "latitude": 47.75,
     "longitude": -122.25,
+    "duration": 10800,
     "value": 0
   },
   {
     "time": new Date("2024-08-20T16:00:00.000Z"),
     "latitude": 47.75,
     "longitude": -122.25,
+    "duration": 10800,
     "value": 0
   },
   {
     "time": new Date("2024-08-20T19:00:00.000Z"),
     "latitude": 47.75,
     "longitude": -122.25,
+    "duration": 10800,
     "value": 0.000002940067597816433
   },
   {
     "time": new Date("2024-08-20T22:00:00.000Z"),
     "latitude": 47.75,
     "longitude": -122.25,
+    "duration": 10800,
     "value": 0.00007464068029076087
   },
   {
     "time": new Date("2024-08-21T01:00:00.000Z"),
     "latitude": 47.75,
     "longitude": -122.25,
+    "duration": 10800,
     "value": 0.00001905282479447121
   },
   {
     "time": new Date("2024-08-21T04:00:00.000Z"),
     "latitude": 47.75,
     "longitude": -122.25,
+    "duration": 10800,
     "value": 0.00010161692339361316
   },
   {
     "time": new Date("2024-08-21T07:00:00.000Z"),
     "latitude": 47.75,
     "longitude": -122.25,
+    "duration": 10800,
     "value": 0.00005031439416219344
   },
   {
     "time": new Date("2024-08-21T10:00:00.000Z"),
     "latitude": 47.75,
     "longitude": -122.25,
+    "duration": 10800,
     "value": 0
   },
   {
     "time": new Date("2024-08-21T13:00:00.000Z"),
     "latitude": 47.75,
     "longitude": -122.25,
+    "duration": 10800,
     "value": 0.0000013801752054913108
   }
 ];
@@ -132,96 +148,112 @@ const mockPrecipitableWaterData = [
     "time": new Date("2024-08-19T16:00:00.000Z"),
     "latitude": 47.75,
     "longitude": -122.25,
+    "duration": 10800,
     "value": 0
   },
   {
     "time": new Date("2024-08-19T19:00:00.000Z"),
     "latitude": 47.75,
     "longitude": -122.25,
+    "duration": 10800,
     "value": 0
   },
   {
     "time": new Date("2024-08-19T22:00:00.000Z"),
     "latitude": 47.75,
     "longitude": -122.25,
+    "duration": 10800,
     "value": 0
   },
   {
     "time": new Date("2024-08-20T01:00:00.000Z"),
     "latitude": 47.75,
     "longitude": -122.25,
+    "duration": 10800,
     "value": 0
   },
   {
     "time": new Date("2024-08-20T04:00:00.000Z"),
     "latitude": 47.75,
     "longitude": -122.25,
+    "duration": 10800,
     "value": 0
   },
   {
     "time": new Date("2024-08-20T07:00:00.000Z"),
     "latitude": 47.75,
     "longitude": -122.25,
+    "duration": 10800,
     "value": 0
   },
   {
     "time": new Date("2024-08-20T10:00:00.000Z"),
     "latitude": 47.75,
     "longitude": -122.25,
+    "duration": 10800,
     "value": 0
   },
   {
     "time": new Date("2024-08-20T13:00:00.000Z"),
     "latitude": 47.75,
     "longitude": -122.25,
+    "duration": 10800,
     "value": 0
   },
   {
     "time": new Date("2024-08-20T16:00:00.000Z"),
     "latitude": 47.75,
     "longitude": -122.25,
+    "duration": 10800,
     "value": 0
   },
   {
     "time": new Date("2024-08-20T19:00:00.000Z"),
     "latitude": 47.75,
     "longitude": -122.25,
+    "duration": 10800,
     "value": 40.0
   },
   {
     "time": new Date("2024-08-20T22:00:00.000Z"),
     "latitude": 47.75,
     "longitude": -122.25,
+    "duration": 10800,
     "value": 45.5
   },
   {
     "time": new Date("2024-08-21T01:00:00.000Z"),
     "latitude": 47.75,
     "longitude": -122.25,
+    "duration": 10800,
     "value": 30.5
   },
   {
     "time": new Date("2024-08-21T04:00:00.000Z"),
     "latitude": 47.75,
     "longitude": -122.25,
+    "duration": 10800,
     "value": 10.5
   },
   {
     "time": new Date("2024-08-21T07:00:00.000Z"),
     "latitude": 47.75,
     "longitude": -122.25,
+    "duration": 10800,
     "value": 0
   },
   {
     "time": new Date("2024-08-21T10:00:00.000Z"),
     "latitude": 47.75,
     "longitude": -122.25,
+    "duration": 10800,
     "value": 0
   },
   {
     "time": new Date("2024-08-21T13:00:00.000Z"),
     "latitude": 47.75,
     "longitude": -122.25,
+    "duration": 10800,
     "value": 0
   }
 ];
