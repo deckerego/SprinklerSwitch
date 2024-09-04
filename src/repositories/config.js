@@ -1,3 +1,4 @@
+require('dotenv').config()
 const fs = require('node:fs');
 
 class ConfigRepository {
@@ -10,8 +11,17 @@ class ConfigRepository {
     }
     
     get(key, fallback) {
+        console.log("NOOOOOO");
+        if(typeof key != 'string') throw new TypeError("Key is not a string");
         if(! this.config) this.load();
-        return this.config[key] || fallback;
+        return this.getEnv(key) || this.config[key] || fallback;
+    }
+
+    getEnv(key) {
+        const value = process.env[key.toUpperCase()];
+        if(! value) return undefined;
+        const numeric = Number.parseFloat(value);
+        return isNaN(numeric) ? value : numeric;
     }
 }
 

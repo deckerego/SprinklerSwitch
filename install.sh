@@ -15,4 +15,4 @@ chown -R pi:pi /opt/sprinklerswitch
 cd /opt/sprinklerswitch
 npm ci
 
-service sprinklerswitch start
+service sprinklerswitch restart

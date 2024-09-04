@@ -1,6 +1,8 @@
 const noaa_gfs = require("noaa-gfs-js");
 const haversine = require('haversine-distance');
 const DEBUG = process.env.DEBUG ? process.env.DEBUG === 'true' : false;
+const TRACE = process.env.TRACE ? process.env.TRACE === 'true' : false;
+const consoleLog = console.log;
 
 class GfsRepository {
     precision = '0p25';
@@ -28,19 +30,22 @@ class GfsRepository {
 
     async getAggregateMetric(lat, lon, metric) {
         const metrics = await this.getMetric(lat, lon, metric);
-        console.debug(`Fetched ${metrics.array_format.length} ${metric} results from NOAA`);
-        if (DEBUG) console.debug(metrics.array_format.map(result => `${new Date(result.time).toISOString()},${result.lat},${result.lon},${metric},${result.value}`));
+        if(DEBUG) console.debug(`Fetched ${metrics.array_format.length} ${metric} results from NOAA`);
+        if(TRACE) console.trace(metrics.array_format.map(result => `${new Date(result.time).toISOString()},${result.lat},${result.lon},${metric},${result.value}`));
 
         const aggregateMetrics = GfsRepository.closest(lat, lon, metrics);
-        console.debug(`Aggregated ${aggregateMetrics.length} ${metric} values`);
-        if (DEBUG) console.debug(aggregateMetrics.map(result => `${new Date(result.time).toISOString()},${metric},${result.value}`));
+        if(DEBUG) console.debug(`Aggregated ${aggregateMetrics.length} ${metric} values`);
+        if(TRACE) console.trace(aggregateMetrics.map(result => `${new Date(result.time).toISOString()},${metric},${result.duration},${result.value}`));
 
         return aggregateMetrics;
     }
 
     async getMetric(lat, lon, metric) {
         const yesterday = GfsRepository.getYesterday();
-        return await noaa_gfs.get_gfs_data(this.precision, yesterday.dateString, yesterday.hourString, [lat, lat], [lon, lon], this.sampleCount - 1, metric, true);
+        if(! TRACE) console.log = (message) => { /* Mute console logging from the NOAA GFS library */ };
+        const result = await noaa_gfs.get_gfs_data(this.precision, yesterday.dateString, yesterday.hourString, [lat, lat], [lon, lon], this.sampleCount, metric, true);
+        console.log = consoleLog;
+        return result;
     }
 
     static getYesterday() {
@@ -56,8 +61,8 @@ class GfsRepository {
         };
     }
 
-    static closest(lat, lon, results) {
-        const aggregate = results.array_format.reduce((acc, result) => {
+    static closest(lat, lon, metrics) {
+        const aggregate = metrics.array_format.reduce((acc, result) => {
             const resultTime = new Date(result.time);
             const resultDistance = haversine([lat, lon], [result.lat, result.lon]);
 
@@ -66,6 +71,8 @@ class GfsRepository {
                 if(previousResult.distance > resultDistance) {
                     acc.set(result.time, {
                         time: resultTime,
+                        latitude: result.lat,
+                        longitude: result.lon,
                         distance: resultDistance,
                         value: result.value
                     });
@@ -73,6 +80,8 @@ class GfsRepository {
             } else {
                 acc.set(result.time, {
                     time: resultTime,
+                    latitude: result.lat,
+                    longitude: result.lon,
                     distance: resultDistance,
                     value: result.value
                 });
@@ -80,7 +89,13 @@ class GfsRepository {
             return acc;
         }, new Map());
 
-        return Array.from(aggregate.values());
+        const enriched = Array.from(aggregate.values()).map((result, i, results) => {
+            const resultDuration = i < results.length - 1 ? (new Date(results[i+1].time) - result.time) / 1000 : undefined;
+            return { ...result, duration: resultDuration }; 
+        });
+
+        // Don't return the last element, it was just there for duration calcuations.
+        return enriched.slice(0, -1); 
     }
 }
 
