@@ -8,7 +8,6 @@ class MetricsService {
         const longitude = configRepository.get("longitude");
 
         const precipitationRate = await gfsRepository.getPrecipitationRate(latitude, longitude) || [];
-        console.log(precipitationRate);
         const priorAccumulation = precipitationRate.reduce((acc, result) => result.time <= now ? acc + (result.value * result.duration) : acc, 0);
         const forecastAccumulation = precipitationRate.reduce((acc, result) => result.time > now ? acc + (result.value * result.duration) : acc, 0);
         if(precipitationRate[0]) console.info(`Total surface precipitation (kg/m^2) @[${precipitationRate[0].latitude}, ${precipitationRate[0].longitude}]: ${priorAccumulation} => ${forecastAccumulation}`);

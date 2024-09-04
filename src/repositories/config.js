@@ -11,6 +11,7 @@ class ConfigRepository {
     }
     
     get(key, fallback) {
+        console.log("NOOOOOO");
         if(typeof key != 'string') throw new TypeError("Key is not a string");
         if(! this.config) this.load();
         return this.getEnv(key) || this.config[key] || fallback;

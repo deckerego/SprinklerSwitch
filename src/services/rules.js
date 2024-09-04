@@ -7,17 +7,17 @@ class RulesService {
 
     evaluate(facts) {
         return !(
-            exceedsPrecipitationThreshold(facts.priorAccumulation, facts.forecastAccumulation) &&
-            exceedsWaterThreshold(facts.maxPrecipitable, facts.maxCloudWater)
+            this.exceedsPrecipitationThreshold(facts.priorAccumulation, facts.forecastAccumulation) &&
+            this.exceedsWaterThreshold(facts.maxPrecipitable, facts.maxCloudWater)
         );
     }
 
     exceedsWaterThreshold(preciptable, cloudWater) {
-        return preciptable > precipitableWaterThreshold || cloudWater > cloudWaterThreshold
+        return (preciptable > this.precipitableWaterThreshold) || (cloudWater > this.cloudWaterThreshold);
     }
 
     exceedsPrecipitationThreshold(priorAccumulation, forecastAccumulation) {
-        return (priorAccumulation + forecastAccumulation) > precipitationRateThreshold
+        return (priorAccumulation + forecastAccumulation) > this.precipitationRateThreshold;
     }
 }
 
