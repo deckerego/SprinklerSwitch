@@ -12,6 +12,10 @@ configRepository.get.mockImplementation((key, fallback) => {
 const rulesService = require("../../src/services/rules.js");
 
 describe("Precipitation rate", () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+  
   test("Too much rain yesterday", async () => {
     const result = await rulesService.evaluate({
       priorAccumulation: 10.5,

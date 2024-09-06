@@ -23,12 +23,17 @@ class MetricsService {
         const relativeHumidity = await gfsRepository.getRelativeHumidity(latitude, longitude) || [];
         const priorRelativeHumidity = relativeHumidity.reduce((acc, result) => result.time <= now && result.value < acc ? result.value : acc, Number.MAX_SAFE_INTEGER);
         const forecastRelativeHumidity = relativeHumidity.reduce((acc, result) => result.time > now && result.value < acc ? result.value : acc, Number.MAX_SAFE_INTEGER);
-        if(relativeHumidity[0]) console.info(`Least relative humidity 30-0 millibars above ground (%) @[${relativeHumidity[0].latitude}, ${relativeHumidity[0].longitude}]: ${priorRelativeHumidity} => ${forecastRelativeHumidity}`);
+        if(relativeHumidity[0]) console.info(`Least relative humidity (%) @[${relativeHumidity[0].latitude}, ${relativeHumidity[0].longitude}]: ${priorRelativeHumidity} => ${forecastRelativeHumidity}`);
 
         const groundTemp = await gfsRepository.getGroundTemperature(latitude, longitude) || [];
         const priorGroundTemp = groundTemp.reduce((acc, result) => result.time <= now && result.value > acc ? result.value : acc, 0);
         const forecastGroundTemp = groundTemp.reduce((acc, result) => result.time > now && result.value > acc ? result.value : acc, 0);
-        if(groundTemp[0]) console.info(`Average temperature 30-0 millibars above ground (k) @[${groundTemp[0].latitude}, ${groundTemp[0].longitude}]: ${priorGroundTemp} => ${forecastGroundTemp}`);
+        if(groundTemp[0]) console.info(`Maximum temperature (k) @[${groundTemp[0].latitude}, ${groundTemp[0].longitude}]: ${priorGroundTemp} => ${forecastGroundTemp}`);
+
+        const windSpeed = await gfsRepository.getWindSpeed(latitude, longitude) || [];
+        const futureWindSpeed = windSpeed.filter(result => result.time > now);
+        const avgWindSpeed = futureWindSpeed.reduce((acc, result, i) => ((acc * i) + result.value) / (i+1), 0);
+        if(windSpeed[0]) console.info(`Average wind speed (m/s) @[${windSpeed[0].latitude}, ${windSpeed[0].longitude}]: ${avgWindSpeed}`);
 
         return {
             priorAccumulation: priorAccumulation,
@@ -38,7 +43,8 @@ class MetricsService {
             priorRelativeHumidity: priorRelativeHumidity,
             forecastRelativeHumidity: forecastRelativeHumidity,
             priorGroundTemp: priorGroundTemp,
-            forecastGroundTemp: forecastGroundTemp
+            forecastGroundTemp: forecastGroundTemp,
+            windSpeed: avgWindSpeed
         }
     }
 }

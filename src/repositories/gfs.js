@@ -21,11 +21,29 @@ class GfsRepository {
     }
 
     async getRelativeHumidity(lat, lon) {
-        return await this.getAggregateMetric(lat, lon, 'rh30_0mb');
+        return await this.getAggregateMetric(lat, lon, 'rhprs');
     }
 
     async getGroundTemperature(lat, lon) {
-        return await this.getAggregateMetric(lat, lon, 'tmp30_0mb');
+        return await this.getAggregateMetric(lat, lon, 'tmpprs');
+    }
+
+    async getWindSpeed(lat, lon) {
+        const windU = await this.getAggregateMetric(lat, lon, 'ugrdprs');
+        const windV = await this.getAggregateMetric(lat, lon, 'vgrdprs');
+
+        const windUByTime = windU.reduce((acc, result) => acc.set(result.time.toISOString(), result), new Map());
+        const windSpeed = windV.map((resultV) => {
+            const resultU = windUByTime.get(resultV.time.toISOString());
+            return {
+                ...resultV,
+                uValue: resultU.value,
+                vValue: resultV.value,
+                value: Math.sqrt((resultU.value * resultU.value) + (resultV.value * resultV.value))
+            };
+        });
+
+        return Array.from(windSpeed.values());
     }
 
     async getAggregateMetric(lat, lon, metric) {
