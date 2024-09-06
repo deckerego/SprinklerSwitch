@@ -36,5 +36,5 @@ npm test
 You can test locally without setting GPIO pins using:
 ```
 npm ci
-npm run launch
+npm start
 ```
