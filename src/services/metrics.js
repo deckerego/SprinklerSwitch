@@ -32,7 +32,7 @@ class MetricsService {
         const specificHumidity = data[3] || [];
         const priorSpecificHumidity = specificHumidity.reduce((acc, result) => result.time <= now && result.value < acc ? result.value : acc, Number.MAX_SAFE_INTEGER);
         const forecastSpecificHumidity = specificHumidity.reduce((acc, result) => result.time > now && result.value < acc ? result.value : acc, Number.MAX_SAFE_INTEGER);
-        if(specificHumidity[0]) console.info(`Least relative humidity (%) @[${specificHumidity[0].latitude}, ${specificHumidity[0].longitude}]: ${priorSpecificHumidity} => ${forecastSpecificHumidity}`);
+        if(specificHumidity[0]) console.info(`Least specific humidity (kg/kg) @[${specificHumidity[0].latitude}, ${specificHumidity[0].longitude}]: ${priorSpecificHumidity} => ${forecastSpecificHumidity}`);
 
         const groundTemp = data[4] || [];
         const priorGroundTemp = groundTemp.reduce((acc, result) => result.time <= now && result.value > acc ? result.value : acc, 0);

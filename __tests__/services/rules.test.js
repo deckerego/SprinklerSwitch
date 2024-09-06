@@ -21,7 +21,9 @@ describe("Precipitation rate", () => {
       priorAccumulation: 10.5,
       forecastAccumulation: 0.0,
       maxPrecipitable: Number.MAX_SAFE_INTEGER,
-      maxCloudWater: Number.MAX_SAFE_INTEGER
+      maxCloudWater: Number.MAX_SAFE_INTEGER,
+      priorSpecificHumidity: Number.MAX_SAFE_INTEGER,
+      forecastSpecificHumidity: Number.MAX_SAFE_INTEGER,
     });
     expect(result).toBe(false);
   });
@@ -31,7 +33,9 @@ describe("Precipitation rate", () => {
       priorAccumulation: 0.0,
       forecastAccumulation: 10.5,
       maxPrecipitable: Number.MAX_SAFE_INTEGER,
-      maxCloudWater: Number.MAX_SAFE_INTEGER
+      maxCloudWater: Number.MAX_SAFE_INTEGER,
+      priorSpecificHumidity: Number.MAX_SAFE_INTEGER,
+      forecastSpecificHumidity: Number.MAX_SAFE_INTEGER,
     });
     expect(result).toBe(false);
   });
@@ -41,7 +45,9 @@ describe("Precipitation rate", () => {
       priorAccumulation: 5.5,
       forecastAccumulation: 5.5,
       maxPrecipitable: Number.MAX_SAFE_INTEGER,
-      maxCloudWater: Number.MAX_SAFE_INTEGER
+      maxCloudWater: Number.MAX_SAFE_INTEGER,
+      priorSpecificHumidity: Number.MAX_SAFE_INTEGER,
+      forecastSpecificHumidity: Number.MAX_SAFE_INTEGER,
     });
     expect(result).toBe(false);
   });
@@ -51,7 +57,93 @@ describe("Precipitation rate", () => {
       priorAccumulation: 1.0,
       forecastAccumulation: 1.0,
       maxPrecipitable: Number.MAX_SAFE_INTEGER,
-      maxCloudWater: Number.MAX_SAFE_INTEGER
+      maxCloudWater: Number.MAX_SAFE_INTEGER,
+      priorSpecificHumidity: Number.MAX_SAFE_INTEGER,
+      forecastSpecificHumidity: Number.MAX_SAFE_INTEGER,
+    });
+    expect(result).toBe(true);
+  });
+});
+
+describe("Cloud water", () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+  
+  test("Heavy Clouds", async () => {
+    const result = await rulesService.evaluate({
+      priorAccumulation: Number.MAX_SAFE_INTEGER,
+      forecastAccumulation: Number.MAX_SAFE_INTEGER,
+      maxPrecipitable: Number.MAX_SAFE_INTEGER,
+      maxCloudWater: Number.MAX_SAFE_INTEGER,
+      priorSpecificHumidity: 0.0,
+      forecastSpecificHumidity: 0.0,
+    });
+    expect(result).toBe(false);
+  });
+
+  test("No Clouds", async () => {
+    const result = await rulesService.evaluate({
+      priorAccumulation: Number.MAX_SAFE_INTEGER,
+      forecastAccumulation: Number.MAX_SAFE_INTEGER,
+      maxPrecipitable: 0.0,
+      maxCloudWater: 0.0,
+      priorSpecificHumidity: 0.0,
+      forecastSpecificHumidity: 0.0,
+    });
+    expect(result).toBe(true);
+  });
+
+  test("Only clouds", async () => {
+    const result = await rulesService.evaluate({
+      priorAccumulation: Number.MAX_SAFE_INTEGER,
+      forecastAccumulation: Number.MAX_SAFE_INTEGER,
+      maxPrecipitable: 0.0,
+      maxCloudWater: Number.MAX_SAFE_INTEGER,
+      priorSpecificHumidity: 0.0,
+      forecastSpecificHumidity: 0.0,
+    });
+    expect(result).toBe(false);
+  });
+
+  test("Preciptable", async () => {
+    const result = await rulesService.evaluate({
+      priorAccumulation: Number.MAX_SAFE_INTEGER,
+      forecastAccumulation: Number.MAX_SAFE_INTEGER,
+      maxPrecipitable: Number.MAX_SAFE_INTEGER,
+      maxCloudWater: 0.0,
+      priorSpecificHumidity: 0.0,
+      forecastSpecificHumidity: 0.0,
+    });
+    expect(result).toBe(false);
+  });
+});
+
+describe("Humidity", () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+  
+  test("Humidity spike", async () => {
+    const result = await rulesService.evaluate({
+      priorAccumulation: Number.MAX_SAFE_INTEGER,
+      forecastAccumulation: Number.MAX_SAFE_INTEGER,
+      maxPrecipitable:0.0,
+      maxCloudWater: 0.0,
+      priorSpecificHumidity: 1.0,
+      forecastSpecificHumidity: 2.0,
+    });
+    expect(result).toBe(false);
+  });
+
+  test("Stable humidity", async () => {
+    const result = await rulesService.evaluate({
+      priorAccumulation: Number.MAX_SAFE_INTEGER,
+      forecastAccumulation: Number.MAX_SAFE_INTEGER,
+      maxPrecipitable: 0.0,
+      maxCloudWater: 0.0,
+      priorSpecificHumidity: 1.0,
+      forecastSpecificHumidity: 1.0,
     });
     expect(result).toBe(true);
   });

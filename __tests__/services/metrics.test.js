@@ -7,7 +7,7 @@ jest.mock("../../src/repositories/config.js");
 gfsRepository.getPrecipitationRate.mockImplementation((lat, lon) =>  Promise.resolve(mockDecimalData));
 gfsRepository.getPrecipitableWater.mockImplementation((lat, lon) =>  Promise.resolve(mockNumericData));
 gfsRepository.getCloudWater.mockImplementation((lat, lon) =>  Promise.resolve(mockDecimalData));
-gfsRepository.getSpecificHumidity.mockImplementation((lat, lon) =>  Promise.resolve(mockNumericData));
+gfsRepository.getSpecificHumidity.mockImplementation((lat, lon) =>  Promise.resolve(mockDecimalData));
 gfsRepository.getGroundTemperature.mockImplementation((lat, lon) =>  Promise.resolve(mockNumericData));
 gfsRepository.getWindSpeed.mockImplementation((lat, lon) =>  Promise.resolve(mockDecimalData));
 
