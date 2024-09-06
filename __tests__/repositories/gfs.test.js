@@ -33,7 +33,6 @@ describe("Obtain NOAA GFS data", () => {
     });
 
     const results = await gfsRepository.getWindSpeed(47.6205099, -122.3518523);
-    console.log(results);
     expect(results).toHaveLength(gfsRepository.sampleCount);
     expect(results[10].value).toBe(Math.sqrt(Math.pow(0.000030000001, 2) + Math.pow(0.000030000001, 2)));
   });

@@ -24,6 +24,10 @@ class GfsRepository {
         return await this.getAggregateMetric(lat, lon, 'rhprs');
     }
 
+    async getSpecificHumidity(lat, lon) {
+        return await this.getAggregateMetric(lat, lon, 'spfhprs');
+    }
+
     async getGroundTemperature(lat, lon) {
         return await this.getAggregateMetric(lat, lon, 'tmpprs');
     }

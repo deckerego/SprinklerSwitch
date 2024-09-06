@@ -8,24 +8,12 @@ class RulesService {
 
     evaluate(facts) {
         return !(
-            this.exceedsPrecipitationThreshold(facts.priorAccumulation, facts.forecastAccumulation) &&
-            (
-                this.exceedsWaterThreshold(facts.maxPrecipitable, facts.maxCloudWater) ||
-                this.humiditySpike(facts.priorRelativeHumidity, facts.forecastRelativeHumidity)
-            )
+            this.exceedsPrecipitationThreshold(facts.priorAccumulation, facts.forecastAccumulation)
         );
-    }
-
-    exceedsWaterThreshold(preciptable, cloudWater) {
-        return (preciptable > this.precipitableWaterThreshold) || (cloudWater > this.cloudWaterThreshold);
     }
 
     exceedsPrecipitationThreshold(priorAccumulation, forecastAccumulation) {
         return (priorAccumulation + forecastAccumulation) > this.precipitationRateThreshold;
-    }
-
-    humiditySpike(priorRelativeHumidity, forecastRelativeHumidity) {
-        return (forecastRelativeHumidity / priorRelativeHumidity) > this.humidityChangePct;
     }
 }
 

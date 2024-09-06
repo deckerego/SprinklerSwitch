@@ -11,7 +11,7 @@ class MetricsService {
             gfsRepository.getPrecipitationRate(latitude, longitude),
             gfsRepository.getPrecipitableWater(latitude, longitude),
             gfsRepository.getCloudWater(latitude, longitude),
-            gfsRepository.getRelativeHumidity(latitude, longitude),
+            gfsRepository.getSpecificHumidity(latitude, longitude),
             gfsRepository.getGroundTemperature(latitude, longitude),
             gfsRepository.getWindSpeed(latitude, longitude),
         ]);
@@ -29,10 +29,10 @@ class MetricsService {
         const maxCloudWater = cloudWater.reduce((acc, result) => result.time > now && result.value > acc ? result.value : acc, 0);
         if(cloudWater[0]) console.info(`Maximum cloud water (kg/m^2) @[${cloudWater[0].latitude}, ${cloudWater[0].longitude}]: ${maxCloudWater}`);
 
-        const relativeHumidity = data[3] || [];
-        const priorRelativeHumidity = relativeHumidity.reduce((acc, result) => result.time <= now && result.value < acc ? result.value : acc, Number.MAX_SAFE_INTEGER);
-        const forecastRelativeHumidity = relativeHumidity.reduce((acc, result) => result.time > now && result.value < acc ? result.value : acc, Number.MAX_SAFE_INTEGER);
-        if(relativeHumidity[0]) console.info(`Least relative humidity (%) @[${relativeHumidity[0].latitude}, ${relativeHumidity[0].longitude}]: ${priorRelativeHumidity} => ${forecastRelativeHumidity}`);
+        const specificHumidity = data[3] || [];
+        const priorSpecificHumidity = specificHumidity.reduce((acc, result) => result.time <= now && result.value < acc ? result.value : acc, Number.MAX_SAFE_INTEGER);
+        const forecastSpecificHumidity = specificHumidity.reduce((acc, result) => result.time > now && result.value < acc ? result.value : acc, Number.MAX_SAFE_INTEGER);
+        if(specificHumidity[0]) console.info(`Least relative humidity (%) @[${specificHumidity[0].latitude}, ${specificHumidity[0].longitude}]: ${priorSpecificHumidity} => ${forecastSpecificHumidity}`);
 
         const groundTemp = data[4] || [];
         const priorGroundTemp = groundTemp.reduce((acc, result) => result.time <= now && result.value > acc ? result.value : acc, 0);
@@ -49,8 +49,8 @@ class MetricsService {
             forecastAccumulation: forecastAccumulation,
             maxPrecipitable: maxPrecipitable,
             maxCloudWater: maxCloudWater,
-            priorRelativeHumidity: priorRelativeHumidity,
-            forecastRelativeHumidity: forecastRelativeHumidity,
+            priorSpecificHumidity: priorSpecificHumidity,
+            forecastSpecificHumidity: forecastSpecificHumidity,
             priorGroundTemp: priorGroundTemp,
             forecastGroundTemp: forecastGroundTemp,
             windSpeed: avgWindSpeed

@@ -56,35 +56,3 @@ describe("Precipitation rate", () => {
     expect(result).toBe(true);
   });
 });
-
-describe("Precipitable water", () => {
-  test("High water volume", async () => {
-    const result = await rulesService.evaluate({
-      priorAccumulation: Number.MAX_SAFE_INTEGER,
-      forecastAccumulation: Number.MAX_SAFE_INTEGER,
-      maxPrecipitable: 51.0,
-      maxCloudWater: 0.0
-    });
-    expect(result).toBe(false);
-  });
-
-  test("No water volume", async () => {
-    const result = await rulesService.evaluate({
-      priorAccumulation: Number.MAX_SAFE_INTEGER,
-      forecastAccumulation: Number.MAX_SAFE_INTEGER,
-      maxPrecipitable: 0.0,
-      maxCloudWater: 0.0
-    });
-    expect(result).toBe(true);
-  });
-
-  test("Heavy clouds", async () => {
-    const result = await rulesService.evaluate({
-      priorAccumulation: Number.MAX_SAFE_INTEGER,
-      forecastAccumulation: Number.MAX_SAFE_INTEGER,
-      maxPrecipitable: 0.0,
-      maxCloudWater: 1.5
-    });
-    expect(result).toBe(false);
-  });
-});

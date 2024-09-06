@@ -7,7 +7,7 @@ jest.mock("../../src/repositories/config.js");
 gfsRepository.getPrecipitationRate.mockImplementation((lat, lon) =>  Promise.resolve(mockDecimalData));
 gfsRepository.getPrecipitableWater.mockImplementation((lat, lon) =>  Promise.resolve(mockNumericData));
 gfsRepository.getCloudWater.mockImplementation((lat, lon) =>  Promise.resolve(mockDecimalData));
-gfsRepository.getRelativeHumidity.mockImplementation((lat, lon) =>  Promise.resolve(mockNumericData));
+gfsRepository.getSpecificHumidity.mockImplementation((lat, lon) =>  Promise.resolve(mockNumericData));
 gfsRepository.getGroundTemperature.mockImplementation((lat, lon) =>  Promise.resolve(mockNumericData));
 gfsRepository.getWindSpeed.mockImplementation((lat, lon) =>  Promise.resolve(mockDecimalData));
 
@@ -45,8 +45,8 @@ describe("Get forecast metrics", () => {
   test("Humidity", async () => {
     jest.useFakeTimers().setSystemTime(new Date('2024-08-20T13:30:00.000Z'));
     const result = await metricsService.fetch();
-    expect(result.priorRelativeHumidity).toBe(0);
-    expect(result.forecastRelativeHumidity).toBe(0);
+    expect(result.priorSpecificHumidity).toBe(0);
+    expect(result.forecastSpecificHumidity).toBe(0);
   });
 
   test("Ground temperature", async () => {
