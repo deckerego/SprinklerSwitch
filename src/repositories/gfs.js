@@ -29,11 +29,13 @@ class GfsRepository {
     }
 
     async getWindSpeed(lat, lon) {
-        const windU = await this.getAggregateMetric(lat, lon, 'ugrdprs');
-        const windV = await this.getAggregateMetric(lat, lon, 'vgrdprs');
+        const data = await Promise.all([
+            this.getAggregateMetric(lat, lon, 'ugrdprs'),
+            this.getAggregateMetric(lat, lon, 'vgrdprs'),
+        ]);
 
-        const windUByTime = windU.reduce((acc, result) => acc.set(result.time.toISOString(), result), new Map());
-        const windSpeed = windV.map((resultV) => {
+        const windUByTime = data[0].reduce((acc, result) => acc.set(result.time.toISOString(), result), new Map());
+        const windSpeed = data[1].map((resultV) => {
             const resultU = windUByTime.get(resultV.time.toISOString());
             return {
                 ...resultV,

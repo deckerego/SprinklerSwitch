@@ -7,30 +7,39 @@ class MetricsService {
         const latitude = configRepository.get("latitude");
         const longitude = configRepository.get("longitude");
 
-        const precipitationRate = await gfsRepository.getPrecipitationRate(latitude, longitude) || [];
+        const data = await Promise.all([ // Fetch data all at once
+            gfsRepository.getPrecipitationRate(latitude, longitude),
+            gfsRepository.getPrecipitableWater(latitude, longitude),
+            gfsRepository.getCloudWater(latitude, longitude),
+            gfsRepository.getRelativeHumidity(latitude, longitude),
+            gfsRepository.getGroundTemperature(latitude, longitude),
+            gfsRepository.getWindSpeed(latitude, longitude),
+        ]);
+
+        const precipitationRate = data[0] || [];
         const priorAccumulation = precipitationRate.reduce((acc, result) => result.time <= now ? acc + (result.value * result.duration) : acc, 0);
         const forecastAccumulation = precipitationRate.reduce((acc, result) => result.time > now ? acc + (result.value * result.duration) : acc, 0);
         if(precipitationRate[0]) console.info(`Total surface precipitation (kg/m^2) @[${precipitationRate[0].latitude}, ${precipitationRate[0].longitude}]: ${priorAccumulation} => ${forecastAccumulation}`);
 
-        const precipitableWater = await gfsRepository.getPrecipitableWater(latitude, longitude) || [];
+        const precipitableWater = data[1] || [];
         const maxPrecipitable = precipitableWater.reduce((acc, result) => result.time > now && result.value > acc ? result.value : acc, 0);
         if(precipitableWater[0]) console.info(`Maximum precipitable water (kg/m^2) @[${precipitableWater[0].latitude}, ${precipitableWater[0].longitude}]: ${maxPrecipitable}`);
 
-        const cloudWater = await gfsRepository.getCloudWater(latitude, longitude) || [];
+        const cloudWater = data[2] || [];
         const maxCloudWater = cloudWater.reduce((acc, result) => result.time > now && result.value > acc ? result.value : acc, 0);
         if(cloudWater[0]) console.info(`Maximum cloud water (kg/m^2) @[${cloudWater[0].latitude}, ${cloudWater[0].longitude}]: ${maxCloudWater}`);
 
-        const relativeHumidity = await gfsRepository.getRelativeHumidity(latitude, longitude) || [];
+        const relativeHumidity = data[3] || [];
         const priorRelativeHumidity = relativeHumidity.reduce((acc, result) => result.time <= now && result.value < acc ? result.value : acc, Number.MAX_SAFE_INTEGER);
         const forecastRelativeHumidity = relativeHumidity.reduce((acc, result) => result.time > now && result.value < acc ? result.value : acc, Number.MAX_SAFE_INTEGER);
         if(relativeHumidity[0]) console.info(`Least relative humidity (%) @[${relativeHumidity[0].latitude}, ${relativeHumidity[0].longitude}]: ${priorRelativeHumidity} => ${forecastRelativeHumidity}`);
 
-        const groundTemp = await gfsRepository.getGroundTemperature(latitude, longitude) || [];
+        const groundTemp = data[4] || [];
         const priorGroundTemp = groundTemp.reduce((acc, result) => result.time <= now && result.value > acc ? result.value : acc, 0);
         const forecastGroundTemp = groundTemp.reduce((acc, result) => result.time > now && result.value > acc ? result.value : acc, 0);
         if(groundTemp[0]) console.info(`Maximum temperature (k) @[${groundTemp[0].latitude}, ${groundTemp[0].longitude}]: ${priorGroundTemp} => ${forecastGroundTemp}`);
 
-        const windSpeed = await gfsRepository.getWindSpeed(latitude, longitude) || [];
+        const windSpeed = data[5] || [];
         const futureWindSpeed = windSpeed.filter(result => result.time > now);
         const avgWindSpeed = futureWindSpeed.reduce((acc, result, i) => ((acc * i) + result.value) / (i+1), 0);
         if(windSpeed[0]) console.info(`Average wind speed (m/s) @[${windSpeed[0].latitude}, ${windSpeed[0].longitude}]: ${avgWindSpeed}`);
