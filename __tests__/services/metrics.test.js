@@ -61,6 +61,13 @@ describe("Get forecast metrics", () => {
     const result = await metricsService.fetch();
     expect(result.windSpeed).toBe(0.00003124313318054331);
   });
+
+  test("Evaporation rate", async () => {
+    jest.useFakeTimers().setSystemTime(new Date('2024-08-20T13:30:00.000Z'));
+    const result = await metricsService.fetch();
+    //TODO fix the sample data so that this number isn't garbage
+    expect(result.forecastEvaporationRate).toBe(-1.7472667374812985);
+  });
 });
 
 const mockDecimalData = [
