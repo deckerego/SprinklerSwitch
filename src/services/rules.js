@@ -6,16 +6,16 @@ class RulesService {
 
     evaluate(facts) {
         return !(
-            this.exceedsPrecipitationThreshold(facts) &&
-            this.exceedsWaterThreshold(facts)
+            this.isRainSufficient(facts) ||
+            this.isRainExpected(facts)
         );
     }
 
-    exceedsWaterThreshold(facts) {
+    isRainExpected(facts) {
         return (facts.maxPrecipitable > this.precipitableWaterThreshold) || (facts.maxCloudWater > this.cloudWaterThreshold);
     }
 
-    exceedsPrecipitationThreshold(facts) {
+    isRainSufficient(facts) {
         return (facts.priorAccumulation + facts.forecastAccumulation) > facts.forecastEvaporationRate;
     }
 }

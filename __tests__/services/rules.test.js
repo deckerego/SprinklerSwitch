@@ -1,7 +1,7 @@
 const configRepository = require("../../src/repositories/config.js");
 jest.mock("../../src/repositories/config.js");
 
-describe("Precipitation rate", () => {
+describe("Determine if we have had enough rain", () => {
   beforeAll(() => {
     configRepository.get.mockImplementation((key, fallback) => {
       switch (key) {
@@ -16,7 +16,7 @@ describe("Precipitation rate", () => {
   
   test("Too much rain", async () => {
     const rulesService = require("../../src/services/rules.js");
-    const result = rulesService.exceedsPrecipitationThreshold({
+    const result = rulesService.isRainSufficient({
       priorAccumulation: 1.0,
       forecastAccumulation: 0.5,
       forecastEvaporationRate: 1.25
@@ -26,7 +26,7 @@ describe("Precipitation rate", () => {
 
   test("Too little rain", async () => {
     const rulesService = require("../../src/services/rules.js");
-    const result = rulesService.exceedsPrecipitationThreshold({
+    const result = rulesService.isRainSufficient({
       priorAccumulation: 0.0,
       forecastAccumulation: 0.5,
       forecastEvaporationRate: 1.25
@@ -35,7 +35,7 @@ describe("Precipitation rate", () => {
   });
 });
 
-describe("Atmosphere conditions", () => {
+describe("Determine if rain is expected", () => {
   beforeAll(() => {
     configRepository.get.mockImplementation((key, fallback) => {
       switch (key) {
@@ -52,7 +52,7 @@ describe("Atmosphere conditions", () => {
   
   test("Ready to rain", async () => {
     const rulesService = require("../../src/services/rules.js");
-    const result = rulesService.exceedsWaterThreshold({
+    const result = rulesService.isRainExpected({
       maxPrecipitable: 51.0,
       maxCloudWater: 0.0,
     });
@@ -61,7 +61,7 @@ describe("Atmosphere conditions", () => {
 
   test("Dry water column", async () => {
     const rulesService = require("../../src/services/rules.js");
-    const result = rulesService.exceedsWaterThreshold({
+    const result = rulesService.isRainExpected({
       maxPrecipitable: 10.0,
       maxCloudWater: 0.0,
     });
@@ -70,7 +70,7 @@ describe("Atmosphere conditions", () => {
 
   test("Heavy clouds", async () => {
     const rulesService = require("../../src/services/rules.js");
-    const result = rulesService.exceedsWaterThreshold({
+    const result = rulesService.isRainExpected({
       maxPrecipitable: 0.0,
       maxCloudWater: 1.1,
     });
@@ -80,7 +80,7 @@ describe("Atmosphere conditions", () => {
 
   test("No clouds", async () => {
     const rulesService = require("../../src/services/rules.js");
-    const result = rulesService.exceedsWaterThreshold({
+    const result = rulesService.isRainExpected({
       maxPrecipitable: 0.0,
       maxCloudWater: 0.1,
     });
