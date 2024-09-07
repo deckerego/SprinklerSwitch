@@ -46,8 +46,8 @@ class MetricsService {
         const avgWindSpeed = futureWindSpeed.reduce((acc, result, i) => ((acc * i) + result.value) / (i+1), 0);
         if(windSpeed[0]) console.info(`Average wind speed (m/s) @[${windSpeed[0].latitude}, ${windSpeed[0].longitude}]: ${avgWindSpeed}`);
 
-        const evaporationRate = (25 + 19 * avgWindSpeed) * 1 * (maxSpecificHumidity - forecastSpecificHumidity);
-        if(specificHumidity[0]) console.info(`Evaporation rate (kg/h) @[${specificHumidity[0].latitude}, ${specificHumidity[0].longitude}]: ${evaporationRate}`);
+        const evaporationRate = (25 + 19 * avgWindSpeed) * (maxSpecificHumidity - forecastSpecificHumidity);
+        if(specificHumidity[0]) console.info(`Evaporation rate (kg/m^2/h) @[${specificHumidity[0].latitude}, ${specificHumidity[0].longitude}]: ${evaporationRate}`);
 
         return {
             priorAccumulation: priorAccumulation,
