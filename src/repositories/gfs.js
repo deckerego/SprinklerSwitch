@@ -54,11 +54,10 @@ class GfsRepository {
 
     async getAggregateMetric(lat, lon, metric) {
         const metrics = await this.getMetric(lat, lon, metric);
-        if(DEBUG) console.debug(`Fetched ${metrics.array_format.length} ${metric} results from NOAA`);
         if(TRACE) console.trace(metrics.array_format.map(result => `${new Date(result.time).toISOString()},${result.lat},${result.lon},${metric},${result.value}`));
 
         const aggregateMetrics = GfsRepository.closest(lat, lon, metrics);
-        if(DEBUG) console.debug(`Aggregated ${aggregateMetrics.length} ${metric} values`);
+        if(DEBUG) console.debug(`Aggregated ${metric} metrics from ${metrics.array_format.length} to ${aggregateMetrics.length} values`);
         if(TRACE) console.trace(aggregateMetrics.map(result => `${new Date(result.time).toISOString()},${metric},${result.duration},${result.value}`));
 
         return aggregateMetrics;
@@ -66,7 +65,7 @@ class GfsRepository {
 
     async getMetric(lat, lon, metric) {
         const yesterday = GfsRepository.getYesterday();
-        if(! TRACE) console.log = (message) => { /* Mute console logging from the NOAA GFS library */ };
+        if(! DEBUG) console.log = (message) => { /* Mute console logging from the NOAA GFS library */ };
         const result = await noaa_gfs.get_gfs_data(this.precision, yesterday.dateString, yesterday.hourString, [lat, lat], [lon, lon], this.sampleCount, metric, true);
         console.log = consoleLog;
         return result;
