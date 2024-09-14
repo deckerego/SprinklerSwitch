@@ -6,6 +6,13 @@ Currently includes a Node.JS app that can be run as a cron entry in order to set
 rain in the recent past or rain coming up soon. It is assumed that you have already wired a GPIO pin to a relay
 or a MOSFET so you can switch on or off your irrigation system.
 
+_Fair warning_: if you take a deeper look under the hood you may realize that the math makes no sense, and that I'm 
+making wild assumptions about weather & soil conditions that often confuse causation and correlation. These are all
+valid and good points! The rules engine that determines if the irrigation system should be enabled or disabled was largely
+informed by about three months of data collection & subjective observations as summer became fall, so the science
+is pretty slim. If you can improve on the logic, submit a pull request or create an issue with a suggested solution
+(rather than just pointing out the obvious problems) and I will happily review it!
+
 ## Installing
 
 Installing the sprinkler switch requires some hardware installation and installing the SprinklerSwitch scripts:
@@ -36,5 +43,5 @@ npm test
 You can test locally without setting GPIO pins using:
 ```
 npm ci
-npm run launch
+npm start
 ```

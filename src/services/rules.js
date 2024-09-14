@@ -1,23 +1,23 @@
 const configRepository = require("../repositories/config.js");
 
 class RulesService {
-    precipitationRateThreshold = configRepository.get("precipitationRateThreshold", 10.0);
     precipitableWaterThreshold = configRepository.get("precipitableWaterThreshold", 50.0);
     cloudWaterThreshold = configRepository.get("cloudWaterThreshold", 1.0);
+    turfNerf = configRepository.get("soilRetentionFactor", 0.5); // How much do we think grass reduces the evaporation rate?
 
     evaluate(facts) {
         return !(
-            this.exceedsPrecipitationThreshold(facts.priorAccumulation, facts.forecastAccumulation) &&
-            this.exceedsWaterThreshold(facts.maxPrecipitable, facts.maxCloudWater)
+            this.isRainSufficient(facts) || // Is rain expected to happen in the near future, OR
+            this.isRainExpected(facts)      // Did we get enough rain in the recent past?
         );
     }
 
-    exceedsWaterThreshold(preciptable, cloudWater) {
-        return (preciptable > this.precipitableWaterThreshold) || (cloudWater > this.cloudWaterThreshold);
+    isRainExpected(facts) { 
+        return (facts.maxPrecipitable > this.precipitableWaterThreshold) || (facts.maxCloudWater > this.cloudWaterThreshold);
     }
 
-    exceedsPrecipitationThreshold(priorAccumulation, forecastAccumulation) {
-        return (priorAccumulation + forecastAccumulation) > this.precipitationRateThreshold;
+    isRainSufficient(facts) { 
+        return (facts.priorAccumulation + facts.forecastAccumulation) >= (facts.forecastEvaporationRate * this.turfNerf);
     }
 }
 

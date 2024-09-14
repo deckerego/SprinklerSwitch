@@ -4,8 +4,13 @@ jest.mock("../../src/repositories/gfs.js");
 const configRepository = require("../../src/repositories/config.js");
 jest.mock("../../src/repositories/config.js");
 
-gfsRepository.getPrecipitationRate.mockImplementation((lat, lon, metric) =>  Promise.resolve(mockPrecipitationRateData));
-gfsRepository.getPrecipitableWater.mockImplementation((lat, lon, metric) =>  Promise.resolve(mockPrecipitableWaterData));
+gfsRepository.getPrecipitationRate.mockImplementation((lat, lon) =>  Promise.resolve(mockDecimalData));
+gfsRepository.getPrecipitableWater.mockImplementation((lat, lon) =>  Promise.resolve(mockNumericData));
+gfsRepository.getCloudWater.mockImplementation((lat, lon) =>  Promise.resolve(mockDecimalData));
+gfsRepository.getSpecificHumidity.mockImplementation((lat, lon) =>  Promise.resolve(mockDecimalData));
+gfsRepository.getGroundTemperature.mockImplementation((lat, lon) =>  Promise.resolve(mockNumericData));
+gfsRepository.getWindSpeed.mockImplementation((lat, lon) =>  Promise.resolve(mockDecimalData));
+
 configRepository.get.mockImplementation((key) => {
   switch (key) {
     case 'latitude': return 47.6205099;
@@ -14,6 +19,10 @@ configRepository.get.mockImplementation((key) => {
 });
 
 describe("Get forecast metrics", () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
   test("Precipitation rate", async () => {
     jest.useFakeTimers().setSystemTime(new Date('2024-08-20T13:30:00.000Z'));
     const result = await metricsService.fetch();
@@ -26,9 +35,42 @@ describe("Get forecast metrics", () => {
     const result = await metricsService.fetch();
     expect(result.maxPrecipitable).toBe(45.5);
   });
+
+  test("Cloud water", async () => {
+    jest.useFakeTimers().setSystemTime(new Date('2024-08-20T13:30:00.000Z'));
+    const result = await metricsService.fetch();
+    expect(result.maxCloudWater).toBe(0.00010161692339361316);
+  });
+
+  test("Humidity", async () => {
+    jest.useFakeTimers().setSystemTime(new Date('2024-08-20T13:30:00.000Z'));
+    const result = await metricsService.fetch();
+    expect(result.priorSpecificHumidity).toBe(0);
+    expect(result.forecastSpecificHumidity).toBe(0);
+  });
+
+  test("Ground temperature", async () => {
+    jest.useFakeTimers().setSystemTime(new Date('2024-08-20T13:30:00.000Z'));
+    const result = await metricsService.fetch();
+    expect(result.priorGroundTemp).toBe(0);
+    expect(result.forecastGroundTemp).toBe(45.5);
+  });
+
+  test("Wind speed", async () => {
+    jest.useFakeTimers().setSystemTime(new Date('2024-08-20T13:30:00.000Z'));
+    const result = await metricsService.fetch();
+    expect(result.windSpeed).toBe(0.00003124313318054331);
+  });
+
+  test("Evaporation rate", async () => {
+    jest.useFakeTimers().setSystemTime(new Date('2024-08-20T13:30:00.000Z'));
+    const result = await metricsService.fetch();
+    //TODO fix the sample data so that this number isn't garbage
+    expect(result.forecastEvaporationRate).toBe(-5.247571462687304);
+  });
 });
 
-const mockPrecipitationRateData = [
+const mockDecimalData = [
   {
     "time": new Date("2024-08-19T16:00:00.000Z"),
     "latitude": 47.75,
@@ -143,7 +185,7 @@ const mockPrecipitationRateData = [
   }
 ];
 
-const mockPrecipitableWaterData = [
+const mockNumericData = [
   {
     "time": new Date("2024-08-19T16:00:00.000Z"),
     "latitude": 47.75,
