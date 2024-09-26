@@ -1,7 +1,7 @@
 const configRepository = require("../repositories/config.js");
 
 class RulesService {
-    precipitableWaterThreshold = configRepository.get("precipitableWaterThreshold", 50.0);
+    precipitableWaterThreshold = configRepository.get("precipitableWaterThreshold", 47.5);
     cloudWaterThreshold = configRepository.get("cloudWaterThreshold", 1.0);
     turfNerf = configRepository.get("soilRetentionFactor", 0.5); // How much do we think grass reduces the evaporation rate?
 
