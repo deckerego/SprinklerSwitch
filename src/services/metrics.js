@@ -44,9 +44,9 @@ class MetricsService {
         const avgWindSpeed = futureWindSpeed.reduce((acc, result, i) => ((acc * i) + result.value) / (i+1), Number.MIN_SAFE_INTEGER);
         if(windSpeed[0]) console.info(`Average wind speed (m/s) @[${windSpeed[0].latitude}, ${windSpeed[0].longitude}]: ${avgWindSpeed}`);
 
-        const evaporationRate = this.toEvaporationRate(windSpeed, groundTemp, specificHumidity);
+        const evaporationRate = MetricsService.toEvaporationRate(windSpeed, groundTemp, specificHumidity);
         const maxEvaporationRate = evaporationRate.reduce((acc, result) => result.time > now && (result.value * result.durationHours) > acc ? (result.value * result.durationHours) : acc, Number.MIN_SAFE_INTEGER);
-        if(evaporationRate[0]) console.info(`Evaporation rate (kg/m^2) @[${evaporationRate[0].latitude}, ${evaporationRate[0].longitude}]: ${maxEvaporationRate}`);
+        if(evaporationRate[0]) console.info(`Evaporation rate (kg/m^2/h) @[${evaporationRate[0].latitude}, ${evaporationRate[0].longitude}]: ${maxEvaporationRate}`);
 
         return {
             priorAccumulation: priorAccumulation,
@@ -62,7 +62,14 @@ class MetricsService {
         }
     }
 
-    toEvaporationRate(windSpeed, groundTemp, specificHumidity) {
+    /**
+     * Calculate lawn soil evaporation rate for each specific humidity value provided
+     * @param {*} windSpeed Wind speed metrics in m/s
+     * @param {*} groundTemp Ground temperature in Kelvin
+     * @param {*} specificHumidity Specific humidity in kg per kg
+     * @returns A list of evaporation rates by timestamp in kg per square meter per hour
+     */
+    static toEvaporationRate(windSpeed, groundTemp, specificHumidity) {
         const windByTime = windSpeed.reduce((acc, result) => acc.set(result.time.toISOString(), result), new Map());
         const groundTempByTime = groundTemp.reduce((acc, result) => acc.set(result.time.toISOString(), result), new Map());
         return specificHumidity.map((resultHumid) => {
