@@ -8,8 +8,9 @@ class GfsRepository {
     precision = '0p25'; // Resolution of our geolocation
     sampleCount = 16; // Number of 3 hour forward-marching increments
 
-    /** surface precipitation rate [kg/m^2/s] */
+    /** surface total precipitation [kg/m^2] */
     async getPrecipitationRate(lat, lon) {
+        //TODO The apcpsfc would be a better fit; currently not supported in noaa-gfs-js
         return await this.getAggregateMetric(lat, lon, 'pratesfc');
     }
 
@@ -48,6 +49,8 @@ class GfsRepository {
         const windUByTime = data[0].reduce((acc, result) => acc.set(result.time.toISOString(), result), new Map());
         const windSpeed = data[1].map((resultV) => {
             const resultU = windUByTime.get(resultV.time.toISOString());
+            console.log(JSON.stringify(resultV, null, 2));
+            console.log(JSON.stringify(resultU, null, 2));
             return {
                 ...resultV,
                 uValue: resultU.value,

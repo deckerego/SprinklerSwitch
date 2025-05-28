@@ -19,15 +19,15 @@ class MetricsService {
         const precipitationRate = data[0] || [];
         const priorAccumulation = precipitationRate.reduce((acc, result) => result.time <= now ? acc + (result.value * result.duration) : acc, 0);
         const forecastAccumulation = precipitationRate.reduce((acc, result) => result.time > now ? acc + (result.value * result.duration) : acc, 0);
-        if(precipitationRate[0]) console.info(`Total surface precipitation (kg/m^2) @[${precipitationRate[0].latitude}, ${precipitationRate[0].longitude}]: ${priorAccumulation} => ${forecastAccumulation}`);
+        if(precipitationRate[0]) console.info(`Total surface precipitation (mm/${precipitationRate[0].duration/3600}h) @[${precipitationRate[0].latitude}, ${precipitationRate[0].longitude}]: ${priorAccumulation} => ${forecastAccumulation}`);
 
         const precipitableWater = data[1] || [];
         const maxPrecipitable = precipitableWater.reduce((acc, result) => result.time > now && result.value > acc ? result.value : acc, Number.MIN_SAFE_INTEGER);
-        if(precipitableWater[0]) console.info(`Maximum precipitable water (kg/m^2) @[${precipitableWater[0].latitude}, ${precipitableWater[0].longitude}]: ${maxPrecipitable}`);
+        if(precipitableWater[0]) console.info(`Maximum precipitable water (mm) @[${precipitableWater[0].latitude}, ${precipitableWater[0].longitude}]: ${maxPrecipitable}`);
 
         const cloudWater = data[2] || [];
         const maxCloudWater = cloudWater.reduce((acc, result) => result.time > now && result.value > acc ? result.value : acc, Number.MIN_SAFE_INTEGER);
-        if(cloudWater[0]) console.info(`Maximum cloud water (kg/m^2) @[${cloudWater[0].latitude}, ${cloudWater[0].longitude}]: ${maxCloudWater}`);
+        if(cloudWater[0]) console.info(`Maximum cloud water (mm) @[${cloudWater[0].latitude}, ${cloudWater[0].longitude}]: ${maxCloudWater}`);
 
         const groundTemp = data[3] || [];
         const priorGroundTemp = groundTemp.reduce((acc, result) => result.time <= now && result.value > acc ? result.value : acc, Number.MIN_SAFE_INTEGER);
@@ -46,7 +46,7 @@ class MetricsService {
 
         const evaporationRate = MetricsService.toEvaporationRate(windSpeed, groundTemp, specificHumidity);
         const maxEvaporationRate = evaporationRate.reduce((acc, result) => result.time > now && (result.value * result.durationHours) > acc ? (result.value * result.durationHours) : acc, Number.MIN_SAFE_INTEGER);
-        if(evaporationRate[0]) console.info(`Evaporation rate (kg/m^2/duration) @[${evaporationRate[0].latitude}, ${evaporationRate[0].longitude}]: ${maxEvaporationRate}`);
+        if(evaporationRate[0]) console.info(`Evaporation rate (mm/${evaporationRate[0].durationHours}h) @[${evaporationRate[0].latitude}, ${evaporationRate[0].longitude}]: ${maxEvaporationRate}`);
 
         return {
             priorAccumulation: priorAccumulation,
