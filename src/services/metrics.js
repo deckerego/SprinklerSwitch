@@ -46,7 +46,7 @@ class MetricsService {
 
         const evaporationRate = MetricsService.toEvaporationRate(windSpeed, groundTemp, specificHumidity);
         const maxEvaporationRate = evaporationRate.reduce((acc, result) => result.time > now && (result.value * result.durationHours) > acc ? (result.value * result.durationHours) : acc, Number.MIN_SAFE_INTEGER);
-        if(evaporationRate[0]) console.info(`Evaporation rate (kg/m^2/h) @[${evaporationRate[0].latitude}, ${evaporationRate[0].longitude}]: ${maxEvaporationRate}`);
+        if(evaporationRate[0]) console.info(`Evaporation rate (kg/m^2/duration) @[${evaporationRate[0].latitude}, ${evaporationRate[0].longitude}]: ${maxEvaporationRate}`);
 
         return {
             priorAccumulation: priorAccumulation,
@@ -67,7 +67,7 @@ class MetricsService {
      * @param {*} windSpeed Wind speed metrics in m/s
      * @param {*} groundTemp Ground temperature in Kelvin
      * @param {*} specificHumidity Specific humidity in kg per kg
-     * @returns A list of evaporation rates by timestamp in kg per square meter per hour
+     * @returns A list of evaporation rates over a given duration by timestamp in kg per square meter
      */
     static toEvaporationRate(windSpeed, groundTemp, specificHumidity) {
         const windByTime = windSpeed.reduce((acc, result) => acc.set(result.time.toISOString(), result), new Map());
