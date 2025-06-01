@@ -1,5 +1,6 @@
 const gfsRepository = require("../repositories/gfs.js");
 const configRepository = require("../repositories/config.js");
+const TRACE = process.env.TRACE ? process.env.TRACE === 'true' : false;
 
 class MetricsService {
     async fetch() {
@@ -45,6 +46,7 @@ class MetricsService {
         if(windSpeed[0]) console.info(`Average wind speed (m/s) @[${windSpeed[0].latitude}, ${windSpeed[0].longitude}]: ${avgWindSpeed}`);
 
         const evaporationRate = MetricsService.toEvaporationRate(windSpeed, groundTemp, specificHumidity);
+        if(TRACE) console.trace(JSON.stringify(evaporationRate, null, 2));
         const maxEvaporationRate = evaporationRate.reduce((acc, result) => result.time > now && (result.value * result.durationHours) > acc ? (result.value * result.durationHours) : acc, Number.MIN_SAFE_INTEGER);
         if(evaporationRate[0]) console.info(`Evaporation rate (mm/${evaporationRate[0].durationHours}h) @[${evaporationRate[0].latitude}, ${evaporationRate[0].longitude}]: ${maxEvaporationRate}`);
 

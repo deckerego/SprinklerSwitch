@@ -5,8 +5,12 @@ const TRACE = process.env.TRACE ? process.env.TRACE === 'true' : false;
 const consoleLog = console.log;
 
 class GfsRepository {
-    precision = '0p25'; // Resolution of our geolocation
-    sampleCount = 16; // Number of 3 hour forward-marching increments
+    static precision     = '0p25'; // Resolution of our geolocated metrics
+    static durationHours = 3;      // Duration of a given metric value (e.g. a three hour sample)
+    static previousDays  = 1;      // Number of prior days to query for metrics
+    static futureDays    = 1;      // Number of days in the future to forecast metrics
+    // Number of forward-marching increments by duration
+    static sampleCount   = ((GfsRepository.previousDays + GfsRepository.futureDays) * 24) / GfsRepository.durationHours;
 
     /** surface total precipitation [kg/m^2] */
     async getPrecipitationRate(lat, lon) {
@@ -49,8 +53,6 @@ class GfsRepository {
         const windUByTime = data[0].reduce((acc, result) => acc.set(result.time.toISOString(), result), new Map());
         const windSpeed = data[1].map((resultV) => {
             const resultU = windUByTime.get(resultV.time.toISOString());
-            console.log(JSON.stringify(resultV, null, 2));
-            console.log(JSON.stringify(resultU, null, 2));
             return {
                 ...resultV,
                 uValue: resultU.value,
@@ -88,9 +90,10 @@ class GfsRepository {
      * @returns A list of datestamped values across relevant locations for the given metric
      */
     async getMetric(lat, lon, metric) {
-        const yesterday = GfsRepository.getYesterday();
+        const startDate = GfsRepository.getStartDate();
+        if(DEBUG) console.debug(`Fetching ${metric} at ${GfsRepository.precision} starting ${startDate.dateString} over ${GfsRepository.sampleCount} samples`);
         if(! DEBUG) console.log = (message) => { /* Mute console logging from the NOAA GFS library */ };
-        const result = await noaa_gfs.get_gfs_data(this.precision, yesterday.dateString, yesterday.hourString, [lat, lat], [lon, lon], this.sampleCount, metric, true);
+        const result = await noaa_gfs.get_gfs_data(GfsRepository.precision, startDate.dateString, startDate.hourString, [lat, lat], [lon, lon], GfsRepository.sampleCount, metric, true);
         console.log = consoleLog;
         return result;
     }
@@ -100,13 +103,13 @@ class GfsRepository {
      * @returns A JSON object with a dateString in YYYMMDD format and an 
      * hourString in 24-hour format that is the current time in 6 hour increments
      */
-    static getYesterday() {
-        const yesterday = new Date();
-        yesterday.setHours(yesterday.getHours() - 24);
-        const year = String(yesterday.getFullYear());
-        const month = String(yesterday.getMonth() + 1).padStart(2, '0');
-        const date = String(yesterday.getDate()).padStart(2, '0');
-        const hour = String(yesterday.getHours() - (yesterday.getHours() % 6)).padStart(2, '0');
+    static getStartDate() {
+        const startDate = new Date();
+        startDate.setHours(startDate.getHours() - (24 * GfsRepository.previousDays));
+        const year = String(startDate.getFullYear());
+        const month = String(startDate.getMonth() + 1).padStart(2, '0');
+        const date = String(startDate.getDate()).padStart(2, '0');
+        const hour = String(startDate.getHours() - (startDate.getHours() % 6)).padStart(2, '0');
         return {
             dateString: year + month + date,
             hourString: hour
