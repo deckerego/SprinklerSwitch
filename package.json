@@ -7,7 +7,7 @@
     "start": "DEBUG=true node src/sprinkler.js etc/sprinklerswitch/config.json"
   },
   "dependencies": {
-    "dotenv": "^16.4.5",
+    "dotenv": "^16.5.0",
     "haversine-distance": "^1.2.3",
     "noaa-gfs-js": "^1.1.0",
     "onoff": "^6.0.3"
