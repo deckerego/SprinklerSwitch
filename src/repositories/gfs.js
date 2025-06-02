@@ -5,33 +5,47 @@ const TRACE = process.env.TRACE ? process.env.TRACE === 'true' : false;
 const consoleLog = console.log;
 
 class GfsRepository {
-    precision = '0p25';
-    sampleCount = 16;
+    constructor() {
+        this.precision     = '0p25'; // Resolution of our geolocated metrics
+        this.durationHours = 3;      // Duration of a given metric value (e.g. a three hour sample)
+        this.previousDays  = 1;      // Number of prior days to query for metrics
+        this.futureDays    = 1;      // Number of days in the future to forecast metrics
+        // Number of forward-marching increments by duration
+        this.sampleCount   = ((this.previousDays + this.futureDays) * 24) / this.durationHours;
+    }
 
+    /** surface total precipitation [kg/m^2] */
     async getPrecipitationRate(lat, lon) {
+        //TODO The apcpsfc would be a better fit; currently not supported in noaa-gfs-js
         return await this.getAggregateMetric(lat, lon, 'pratesfc');
     }
 
+    /** entire atmosphere (considered as a single layer) precipitable water [kg/m^2] */
     async getPrecipitableWater(lat, lon) {
         return await this.getAggregateMetric(lat, lon, 'pwatclm');
     }
 
+    /** entire atmosphere (considered as a single layer) cloud water [kg/m^2] */
     async getCloudWater(lat, lon) {
         return await this.getAggregateMetric(lat, lon, 'cwatclm');
     }
 
+    /** relative humidity [%] */
     async getRelativeHumidity(lat, lon) {
         return await this.getAggregateMetric(lat, lon, 'rhprs');
     }
 
+    /** specific humidity [kg/kg] */
     async getSpecificHumidity(lat, lon) {
         return await this.getAggregateMetric(lat, lon, 'spfhprs');
     }
 
+    /** temperature [k] */
     async getGroundTemperature(lat, lon) {
         return await this.getAggregateMetric(lat, lon, 'tmpprs');
     }
 
+    /** composite of u and v components of wind [m/s] */
     async getWindSpeed(lat, lon) {
         const data = await Promise.all([
             this.getAggregateMetric(lat, lon, 'ugrdprs'),
@@ -52,6 +66,13 @@ class GfsRepository {
         return Array.from(windSpeed.values());
     }
 
+    /**
+     * Find the closest values for a given metric
+     * @param {*} lat The latitude you want values for
+     * @param {*} lon The longitude you want values for
+     * @param {*} metric The NOAA GFS Data Field name
+     * @returns A list of datestamped values for the given metric
+     */
     async getAggregateMetric(lat, lon, metric) {
         const metrics = await this.getMetric(lat, lon, metric);
         if(TRACE) console.trace(metrics.array_format.map(result => `${new Date(result.time).toISOString()},${result.lat},${result.lon},${metric},${result.value}`));
@@ -63,27 +84,48 @@ class GfsRepository {
         return aggregateMetrics;
     }
 
+    /**
+     * Get a raw list of noaa-gfs-js metrics
+     * @param {*} lat The latitude you want values for
+     * @param {*} lon The longitude you want values for
+     * @param {*} metric The NOAA GFS Data Field name
+     * @returns A list of datestamped values across relevant locations for the given metric
+     */
     async getMetric(lat, lon, metric) {
-        const yesterday = GfsRepository.getYesterday();
+        const startDate = GfsRepository.getStartDate();
+        if(DEBUG) console.debug(`Fetching ${metric} at ${this.precision} starting ${startDate.dateString} over ${this.sampleCount} samples`);
         if(! DEBUG) console.log = (message) => { /* Mute console logging from the NOAA GFS library */ };
-        const result = await noaa_gfs.get_gfs_data(this.precision, yesterday.dateString, yesterday.hourString, [lat, lat], [lon, lon], this.sampleCount, metric, true);
+        const result = await noaa_gfs.get_gfs_data(this.precision, startDate.dateString, startDate.hourString, [lat, lat], [lon, lon], this.sampleCount, metric, true);
         console.log = consoleLog;
         return result;
     }
 
-    static getYesterday() {
-        const yesterday = new Date();
-        yesterday.setHours(yesterday.getHours() - 24);
-        const year = String(yesterday.getFullYear());
-        const month = String(yesterday.getMonth() + 1).padStart(2, '0');
-        const date = String(yesterday.getDate()).padStart(2, '0');
-        const hour = String(yesterday.getHours() - (yesterday.getHours() % 6)).padStart(2, '0');
+    /**
+     * Provide yesterday as a JSON object that can be parsed by noaa-gfs-js
+     * @returns A JSON object with a dateString in YYYMMDD format and an 
+     * hourString in 24-hour format that is the current time in 6 hour increments
+     */
+    static getStartDate() {
+        const startDate = new Date();
+        startDate.setHours(startDate.getHours() - (24 * this.previousDays));
+        const year = String(startDate.getFullYear());
+        const month = String(startDate.getMonth() + 1).padStart(2, '0');
+        const date = String(startDate.getDate()).padStart(2, '0');
+        const hour = String(startDate.getHours() - (startDate.getHours() % 6)).padStart(2, '0');
         return {
             dateString: year + month + date,
             hourString: hour
         };
     }
 
+    /**
+     * Given a list of values for a metric, consolidate each timestamp+value to contain only 
+     * those entries that are geographically closest to a given latitude/longitude
+     * @param {*} lat The latitude you want values for
+     * @param {*} lon The longitude you want values for
+     * @param {*} metrics The list of values, where each timestamp has one or more location
+     * @returns An aggregated list of values, where each timestamp only has one location
+     */
     static closest(lat, lon, metrics) {
         const aggregate = metrics.array_format.reduce((acc, result) => {
             const resultTime = new Date(result.time);
