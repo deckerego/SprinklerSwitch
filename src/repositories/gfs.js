@@ -1,4 +1,4 @@
-const noaa_gfs = require("noaa-gfs-js");
+const gfsPort = require("../ports/gfs");
 const haversine = require('haversine-distance');
 const { DateTime } = require("luxon");
 const DEBUG = process.env.DEBUG ? process.env.DEBUG === 'true' : false;
@@ -96,7 +96,7 @@ class GfsRepository {
         const startDate = this.getStartDate();
         if(DEBUG) console.debug(`Fetching ${metric} at ${this.precision} starting ${startDate.dateString} over ${this.sampleCount} samples`);
         if(! DEBUG) console.log = (message) => { /* Mute console logging from the NOAA GFS library */ };
-        const result = await noaa_gfs.get_gfs_data(this.precision, startDate.dateString, startDate.hourString, [lat, lat], [lon, lon], this.sampleCount, metric, true);
+        const result = await gfsPort.getMetric(this.precision, startDate.dateString, startDate.hourString, lat, lon, this.sampleCount, metric);
         console.log = consoleLog;
         return result;
     }

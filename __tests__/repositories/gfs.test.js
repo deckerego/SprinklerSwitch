@@ -1,7 +1,7 @@
 const { DateTime, Settings } = require("luxon");
 const gfsRepository = require("../../src/repositories/gfs.js");
-const noaa_gfs = require("noaa-gfs-js");
-jest.mock("noaa-gfs-js");
+const gfsPorts = require("../../src/ports/gfs.js");
+jest.mock("../../src/ports/gfs.js");
 
 describe("Test GFS date formatting", () => {
   const luxonNow = Settings.now;
@@ -38,7 +38,7 @@ describe("Obtain NOAA GFS data", () => {
   });
 
   test("Fetch a metric", async () => {
-    noaa_gfs.get_gfs_data.mockImplementation((precision, date, hour, latRange, lonRange, samples, metric, format) => {
+    gfsPorts.getMetric.mockImplementation((precision, date, hour, latRange, lonRange, samples, metric, format) => {
       return Promise.resolve(mockAnyData);
     });
 
@@ -48,7 +48,7 @@ describe("Obtain NOAA GFS data", () => {
   });
 
   test("Aggregate a metric", async () => {
-    noaa_gfs.get_gfs_data.mockImplementation((precision, date, hour, latRange, lonRange, samples, metric, format) => {
+    gfsPorts.getMetric.mockImplementation((precision, date, hour, latRange, lonRange, samples, metric, format) => {
       return Promise.resolve(mockAnyData);
     });
 
@@ -58,7 +58,7 @@ describe("Obtain NOAA GFS data", () => {
   });
 
   test("Calculate wind speed", async () => {
-    noaa_gfs.get_gfs_data.mockImplementation((precision, date, hour, latRange, lonRange, samples, metric, format) => {
+    gfsPorts.getMetric.mockImplementation((precision, date, hour, latRange, lonRange, samples, metric, format) => {
       return Promise.resolve(mockAnyData);
     });
 
