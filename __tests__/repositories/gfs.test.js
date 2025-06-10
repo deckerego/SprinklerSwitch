@@ -1,6 +1,36 @@
+const { DateTime, Settings } = require("luxon");
 const gfsRepository = require("../../src/repositories/gfs.js");
 const noaa_gfs = require("noaa-gfs-js");
 jest.mock("noaa-gfs-js");
+
+describe("Test GFS date formatting", () => {
+  const luxonNow = Settings.now;
+
+  afterEach(() => {
+    Settings.now = luxonNow;
+  });
+
+  test("Start date of yesterday around noon", () => {
+    Settings.now = () => new Date('2025-06-12T12:00:08.000').valueOf();
+    const startDate = gfsRepository.getStartDate();
+    expect(startDate.dateString).toBe('20250611');
+    expect(startDate.hourString).toBe('12');
+  });
+
+  test("Start date of yesterday around midnight", () => {
+    Settings.now = () => new Date('2025-06-12T00:00:08.000').valueOf();
+    const startDate = gfsRepository.getStartDate();
+    expect(startDate.dateString).toBe('20250611');
+    expect(startDate.hourString).toBe('00');
+  });
+
+  test("Start date of yesterday around 2 AM", () => {
+    Settings.now = () => new Date('2025-06-12T02:00:08.000').valueOf();
+    const startDate = gfsRepository.getStartDate();
+    expect(startDate.dateString).toBe('20250611');
+    expect(startDate.hourString).toBe('00');
+  });
+});
 
 describe("Obtain NOAA GFS data", () => {
   beforeEach(() => {
