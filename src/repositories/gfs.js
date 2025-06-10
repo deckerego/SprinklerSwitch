@@ -1,5 +1,6 @@
 const noaa_gfs = require("noaa-gfs-js");
 const haversine = require('haversine-distance');
+const { DateTime } = require("luxon");
 const DEBUG = process.env.DEBUG ? process.env.DEBUG === 'true' : false;
 const TRACE = process.env.TRACE ? process.env.TRACE === 'true' : false;
 const consoleLog = console.log;
@@ -92,7 +93,7 @@ class GfsRepository {
      * @returns A list of datestamped values across relevant locations for the given metric
      */
     async getMetric(lat, lon, metric) {
-        const startDate = GfsRepository.getStartDate();
+        const startDate = this.getStartDate();
         if(DEBUG) console.debug(`Fetching ${metric} at ${this.precision} starting ${startDate.dateString} over ${this.sampleCount} samples`);
         if(! DEBUG) console.log = (message) => { /* Mute console logging from the NOAA GFS library */ };
         const result = await noaa_gfs.get_gfs_data(this.precision, startDate.dateString, startDate.hourString, [lat, lat], [lon, lon], this.sampleCount, metric, true);
@@ -105,15 +106,11 @@ class GfsRepository {
      * @returns A JSON object with a dateString in YYYMMDD format and an 
      * hourString in 24-hour format that is the current time in 6 hour increments
      */
-    static getStartDate() {
-        const startDate = new Date();
-        startDate.setHours(startDate.getHours() - (24 * this.previousDays));
-        const year = String(startDate.getFullYear());
-        const month = String(startDate.getMonth() + 1).padStart(2, '0');
-        const date = String(startDate.getDate()).padStart(2, '0');
-        const hour = String(startDate.getHours() - (startDate.getHours() % 6)).padStart(2, '0');
+    getStartDate() {
+        const startDate = DateTime.local().minus({ days: this.previousDays });
+        const hour = String(startDate.get('hour') - (startDate.get('hour') % 6)).padStart(2, '0');
         return {
-            dateString: year + month + date,
+            dateString: startDate.toFormat('yyyyMMdd'),
             hourString: hour
         };
     }
