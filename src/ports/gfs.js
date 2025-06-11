@@ -7,8 +7,8 @@ class GfsPort {
             return results;
         })
         .catch((error) => {
-            console.error("Error fetching GFS data: ", error);
-            if(retryWait >= retryWaitMax) throw new Error("Maximum retry limit reached for GFS data fetch.");
+            if(retryWait >= retryWaitMax) throw error;
+            console.error(`Error fetching GFS data, retrying in ${retryWait}`);
             return new Promise((resolve) => setTimeout(resolve, retryWait))
             .then(() => {
                 console.warn("Retrying GFS data fetch...");
