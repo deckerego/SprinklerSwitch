@@ -18,6 +18,31 @@ describe("Obtain NOAA GFS data", () => {
     const results = await gfsPort.getMetric('0p25', '20250501', '06', 47.6205099, -122.3518523, 16, 'my_metric');
     expect(results.array_format).toHaveLength(1);
   });
+
+  test("Recover from error", async () => {
+    noaa_gfs.get_gfs_data.mockImplementationOnce(() => {
+      return Promise.reject(new TypeError("fetch failed"));
+    }); //Fail first time
+
+    noaa_gfs.get_gfs_data.mockImplementation((precision, date, hour, latRange, lonRange, samples, metric, format) => {
+      expect(format).toBe(true);
+      expect(latRange).toEqual([47.6205099, 47.6205099]);
+      expect(lonRange).toEqual([-122.3518523, -122.3518523]);
+      return Promise.resolve(mockAnyData);
+    }); //Succeed second time
+
+    const results = await gfsPort.getMetric('0p25', '20250501', '06', 47.6205099, -122.3518523, 16, 'my_metric', 100);
+    expect(results.array_format).toHaveLength(1);
+  });
+
+  test("Unrecoverable error", async () => {
+    noaa_gfs.get_gfs_data.mockImplementation(() => {
+      return Promise.reject(new TypeError("fetch failed"));
+    });
+
+    const result = gfsPort.getMetric('0p25', '20250501', '06', 47.6205099, -122.3518523, 16, 'my_metric', 100, 400);
+    await expect(result).rejects.toThrow(Error);
+  });
 });
 
 const mockAnyData = {
