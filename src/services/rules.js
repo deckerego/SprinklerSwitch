@@ -17,7 +17,13 @@ class RulesService {
     }
 
     isRainSufficient(facts) { 
-        return (facts.priorAccumulation + facts.forecastAccumulation) >= (facts.forecastEvaporationRate * this.turfNerf);
+        // Only apply turf nerf to positive evaporation rates (actual evaporation)
+        // Negative evaporation rates represent net water addition (dew, fog, etc.)
+        // which lawn grasses don't impact as much
+        const adjustedEvaporationRate = facts.forecastEvaporationRate > 0 
+            ? facts.forecastEvaporationRate * this.turfNerf 
+            : facts.forecastEvaporationRate;
+        return (facts.priorAccumulation + facts.forecastAccumulation) >= adjustedEvaporationRate;
     }
 }
 
