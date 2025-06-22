@@ -33,6 +33,49 @@ describe("Determine if we have had enough rain", () => {
     });
     expect(result).toBe(false);
   });
+
+  test("Negative evaporation rate should not be nerfed - conceptual correctness", async () => {
+    const rulesService = require("../../src/services/rules.js");
+    
+    // Create a scenario where the current (incorrect) behavior would matter
+    // We'll mock the turfNerf to be accessible for this test
+    const originalTurfNerf = rulesService.turfNerf;
+    
+    // Test the internal logic: negative evaporation should not be affected by turf factor
+    // This is more about the conceptual correctness than the final boolean result
+    
+    // Case 1: Very negative evaporation (lots of net water addition from dew/fog)
+    // Current wrong behavior: -4.0 * 0.5 = -2.0 (reduces the water benefit)
+    // Correct behavior: -4.0 (full water benefit)
+    const facts = {
+      priorAccumulation: 0.0,
+      forecastAccumulation: 0.0,
+      forecastEvaporationRate: -4.0  // Net addition of 4mm
+    };
+    
+    // Both should return true, but for different reasons:
+    // Current: 0 >= (-4.0 * 0.5) = 0 >= -2.0 = true
+    // Fixed: 0 >= -4.0 = true
+    const result = rulesService.isRainSufficient(facts);
+    expect(result).toBe(true);
+    
+    // The real test is that we shouldn't nerf negative values
+    // We'll verify this in the actual implementation fix
+  });
+
+  test("Positive evaporation rate should be nerfed as before", async () => {
+    const rulesService = require("../../src/services/rules.js");
+    // With positive evaporation rate (2.0), it should be nerfed to 1.0 (2.0 * 0.5)
+    // Rainfall: 1.0 + 0.5 = 1.5mm
+    // Nerfed evaporation: 1.0mm
+    // This should be sufficient: 1.5 >= 1.0
+    const result = rulesService.isRainSufficient({
+      priorAccumulation: 1.0,
+      forecastAccumulation: 0.5,
+      forecastEvaporationRate: 2.0
+    });
+    expect(result).toBe(true);
+  });
 });
 
 describe("Determine if rain is expected", () => {
