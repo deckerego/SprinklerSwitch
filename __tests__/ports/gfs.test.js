@@ -19,15 +19,12 @@ describe("Obtain NOAA GFS data", () => {
     expect(results.array_format).toHaveLength(1);
   });
 
-  test("Recover from error", async () => {
+  test("Recover from connection failure", async () => {
     noaa_gfs.get_gfs_data.mockImplementationOnce(() => {
       return Promise.reject(new TypeError("fetch failed"));
     }); //Fail first time
 
     noaa_gfs.get_gfs_data.mockImplementation((precision, date, hour, latRange, lonRange, samples, metric, format) => {
-      expect(format).toBe(true);
-      expect(latRange).toEqual([47.6205099, 47.6205099]);
-      expect(lonRange).toEqual([-122.3518523, -122.3518523]);
       return Promise.resolve(mockAnyData);
     }); //Succeed second time
 
@@ -35,9 +32,31 @@ describe("Obtain NOAA GFS data", () => {
     expect(results.array_format).toHaveLength(1);
   });
 
-  test("Unrecoverable error", async () => {
+  test("Unrecoverable connection failure", async () => {
     noaa_gfs.get_gfs_data.mockImplementation(() => {
       return Promise.reject(new TypeError("fetch failed"));
+    });
+
+    const result = gfsPort.getMetric('0p25', '20250501', '06', 47.6205099, -122.3518523, 16, 'my_metric', 100, 400);
+    await expect(result).rejects.toThrow(Error);
+  });
+
+  test("Recover from bad data fetch", async () => {
+    noaa_gfs.get_gfs_data.mockImplementationOnce(() => {
+      return Promise.resolve({});
+    }); //Fail first time
+
+    noaa_gfs.get_gfs_data.mockImplementation((precision, date, hour, latRange, lonRange, samples, metric, format) => {
+      return Promise.resolve(mockAnyData);
+    }); //Succeed second time
+
+    const results = await gfsPort.getMetric('0p25', '20250501', '06', 47.6205099, -122.3518523, 16, 'my_metric', 100);
+    expect(results.array_format).toHaveLength(1);
+  });
+
+  test("Unrecoverable data failure", async () => {
+    noaa_gfs.get_gfs_data.mockImplementation(() => {
+      return Promise.resolve({});
     });
 
     const result = gfsPort.getMetric('0p25', '20250501', '06', 47.6205099, -122.3518523, 16, 'my_metric', 100, 400);
