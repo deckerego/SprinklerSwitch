@@ -14,6 +14,6 @@
     "onoff": "^6.0.3"
   },
   "devDependencies": {
-    "jest": "^29.7.0"
+    "jest": "^30.0.3"
   }
 }
