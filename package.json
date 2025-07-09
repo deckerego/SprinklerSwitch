@@ -8,12 +8,12 @@
   },
   "dependencies": {
     "dotenv": "^17.0.0",
-    "haversine-distance": "^1.2.3",
+    "haversine-distance": "^1.2.4",
     "luxon": "^3.6.1",
     "noaa-gfs-js": "^1.1.0",
     "onoff": "^6.0.3"
   },
   "devDependencies": {
-    "jest": "^29.7.0"
+    "jest": "^30.0.3"
   }
 }
