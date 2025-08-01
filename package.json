@@ -9,7 +9,7 @@
   "dependencies": {
     "dotenv": "^17.0.0",
     "haversine-distance": "^1.2.4",
-    "luxon": "^3.6.1",
+    "luxon": "^3.7.1",
     "noaa-gfs-js": "^1.1.0",
     "onoff": "^6.0.3"
   },
